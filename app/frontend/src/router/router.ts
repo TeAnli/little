@@ -1,42 +1,65 @@
+import type { TemplateResult } from 'lit';
+
+/** 单条路由配置 */
 export interface RouteConfig {
   /** 路径模式，如 '/post/:slug'，以 ':' 开头的段为动态参数 */
   pattern: string;
   /** 匹配后对应的页面标识 */
   page: string;
+  /** 渲染函数 — 接收路径参数和查询参数，返回 Lit 模板 */
+  render: (params: Record<string, string>, query: Record<string, string>) => TemplateResult;
 }
 
+/** 解析后的路由对象 */
 export interface ParsedRoute {
-  /** 页面标识，对应 RouteConfig.page */
+  /** 页面标识 */
   page: string;
-  /** 路径参数，如 { slug: 'hello-world' } */
+  /** 路径参数 */
   params: Record<string, string>;
-  /** 查询参数，如 { q: 'keyword' } */
+  /** 查询参数 */
   query: Record<string, string>;
+  /** 当前匹配路由的渲染函数 */
+  render: (params: Record<string, string>, query: Record<string, string>) => TemplateResult;
 }
 
+/** 路由变化回调 */
 export type RouteChangeCallback = (route: ParsedRoute) => void;
+
+// ---- 内部路由表 ------------------------------------------------------------
 
 const routes: RouteConfig[] = [];
 
-/**
- * 注册单条路由
- * @example
- * registerRoute({ pattern: '/post/:slug', page: 'post' })
- */
-export function registerRoute(config: RouteConfig): void {
-  routes.push(config);
-}
+/** 默认兜底渲染（首页） */
+let fallbackRender: RouteConfig['render'] = () => {
+  throw new Error('No routes registered and no fallback set');
+};
 
 /**
- * 批量注册路由
+ * 批量注册路由。
+ * 第一条注册的路由将作为未匹配时的兜底页。
+ *
  * @example
  * registerRoutes([
- *   { pattern: '/',           page: 'home' },
- *   { pattern: '/post/:slug', page: 'post' },
+ *   { pattern: '/',           page: 'home',   render: () => html`<home-page></home-page>` },
+ *   { pattern: '/post/:slug', page: 'post',   render: (p) => html`<post-page .slug=${p.slug}></post-page>` },
  * ])
  */
 export function registerRoutes(configs: RouteConfig[]): void {
   routes.push(...configs);
+  // 第一条路由作为兜底
+  if (routes.length > 0 && !fallbackRender.name) {
+    fallbackRender = routes[0].render;
+  }
+}
+
+/**
+ * 注册单条路由。
+ *
+ * @example
+ * registerRoute({ pattern: '/about', page: 'about', render: () => html`<about-page></about-page>` })
+ */
+export function registerRoute(config: RouteConfig): void {
+  registerRoutes([config]);
 }
 
 // ---- 路由引擎 --------------------------------------------------------------
@@ -44,10 +67,11 @@ export function registerRoutes(configs: RouteConfig[]): void {
 /**
  * 解析当前 URL hash 为结构化路由对象。
  * 依次用路由表中每条 pattern 匹配当前路径段，支持 ':param' 动态段。
- * 匹配失败时兜底返回 `{ page: 'home' }`。
+ * 匹配失败时兜底返回第一条路由的渲染函数。
  *
  * @example
- * parseHash() // => { page: 'post', params: { slug: 'hello-world' }, query: { lang: 'zh' } }
+ * // URL: #/post/hello-world?lang=zh
+ * parseHash() // => { page: 'post', params: { slug: 'hello-world' }, query: { lang: 'zh' }, render }
  */
 export function parseHash(): ParsedRoute {
   const raw = location.hash.replace(/^#/, '') || '/';
@@ -79,11 +103,11 @@ export function parseHash(): ParsedRoute {
     }
 
     if (matched) {
-      return { page: route.page, params, query };
+      return { page: route.page, params, query, render: route.render };
     }
   }
 
-  return { page: 'home', params: {}, query };
+  return { page: 'home', params: {}, query, render: fallbackRender };
 }
 
 /**
