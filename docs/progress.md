@@ -8,6 +8,7 @@
 
 | 日期 | 更新 |
 |------|------|
+| 2026-07-16 | 添加卡片&表情组件：post-card、tag-badge、theme-switcher、rss-link + 全局样式 + 类型定义 |
 | 2026-07-16 | 路由系统优化：RouteConfig 内置 render |
 | 2026-07-16 | API 层模块化：axios 客户端 + 文章 CRUD + 端点评级 |
 | 2026-07-16 | 路由系统重构：引擎/配置分离 |
@@ -20,6 +21,18 @@
 ## 详细记录
 
 ### 2026-07-16
+
+**卡片 & 表情组件**
+- `components/post-card.ts`：文章卡片（HeroUI 无边框 + Magic UI spring hover + stagger 入场动画）
+- `components/tag-badge.ts`：标签徽章（圆角药丸 + hover 变色）
+- `components/theme-switcher.ts`：亮暗主题一键切换按钮
+- `components/rss-link.ts`：RSS 订阅链接入口
+
+**全局样式 & 类型**
+- `global.css`：CSS 变量设计系统（base/surface/fg/muted/border/accent/ring）+ 亮暗双模式 + 组件类（frosted / card / badge / btn / input）+ 页面过渡动画 + prose-blog 文章排版
+- `types.ts`：Post / Comment / Tag / API 响应类型 / 请求 payload
+
+**前端工程配置**
 
 **路由系统**
 - `router/router.ts`：路由管理器，提供 `registerRoute` / `registerRoutes` 注册、`parseHash` 解析、`navigate` 导航、`onRouteChange` 监听

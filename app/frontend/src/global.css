@@ -1,0 +1,323 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+:root {
+  /* 亮色模式 — zinc 色板 */
+  --c-base: 250 250 250;       /* #FAFAFA zinc-50 */
+  --c-surface: 255 255 255;    /* #FFFFFF */
+  --c-fg: 9 9 11;              /* #09090B zinc-950 */
+  --c-muted: 113 113 122;      /* #71717A zinc-500 */
+  --c-border: 228 228 231;     /* #E4E4E7 zinc-200 */
+  --c-accent: 24 24 27;        /* #18181B zinc-900 */
+  --c-accent-hover: 63 63 70;  /* #3F3F46 zinc-700 */
+  --ring: rgb(63 63 70 / 0.5);
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow-md: 0 4px 16px -2px rgb(0 0 0 / 0.08), 0 2px 6px -2px rgb(0 0 0 / 0.04);
+  --shadow-lg: 0 12px 32px -6px rgb(0 0 0 / 0.12), 0 4px 12px -4px rgb(0 0 0 / 0.06);
+
+  --radius-box: 1rem;
+  --radius-btn: 0.75rem;
+  --radius-badge: 9999px;
+}
+
+[data-theme='dark'] {
+  --c-base: 9 9 11;            /* zinc-950 */
+  --c-surface: 24 24 27;       /* zinc-900 */
+  --c-fg: 250 250 250;         /* zinc-50 */
+  --c-muted: 161 161 170;      /* zinc-400 */
+  --c-border: 39 39 42;        /* zinc-800 */
+  --c-accent: 250 250 250;     /* zinc-50 */
+  --c-accent-hover: 228 228 231; /* zinc-200 */
+  --ring: rgb(228 228 231 / 0.5);
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 16px -2px rgb(0 0 0 / 0.4), 0 2px 6px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 12px 32px -6px rgb(0 0 0 / 0.5), 0 4px 12px -4px rgb(0 0 0 / 0.4);
+}
+
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-base text-fg font-sans antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    min-height: 100dvh;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgb(var(--c-fg) / 0.15);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgb(var(--c-fg) / 0.25);
+  }
+}
+
+@layer components {
+  /* 毛玻璃 — Magic UI frosted glass */
+  .frosted {
+    background-color: rgb(var(--c-base) / 0.7);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+  }
+
+  /* 卡片 — HeroUI 无边框 + Magic UI 弹性 hover */
+  .card {
+    @apply bg-surface rounded-2xl;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 0.3s ease;
+    will-change: transform;
+  }
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* 按钮 — Magic UI 按压弹性 */
+  .btn-primary {
+    @apply bg-accent text-base rounded-xl font-medium cursor-pointer;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+      background-color 0.2s ease;
+  }
+  .btn-primary:hover {
+    background-color: rgb(var(--c-accent-hover));
+  }
+  .btn-primary:active {
+    transform: scale(0.97);
+  }
+
+  .btn-ghost {
+    @apply rounded-xl cursor-pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  .btn-ghost:hover {
+    background-color: rgb(var(--c-fg) / 0.06);
+  }
+
+  /* 标签徽章 — HeroUI 轻量 */
+  .badge {
+    @apply rounded-full text-xs font-medium cursor-pointer;
+    background-color: rgb(var(--c-fg) / 0.06);
+    color: rgb(var(--c-muted));
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  .badge:hover {
+    background-color: rgb(var(--c-fg) / 0.12);
+    color: rgb(var(--c-fg));
+  }
+
+  /* 搜索/输入框 — HeroUI 焦点环 */
+  .input-field {
+    @apply rounded-xl text-fg w-full;
+    background-color: rgb(var(--c-fg) / 0.05);
+    transition: box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+  .input-field::placeholder {
+    color: rgb(var(--c-muted));
+  }
+  .input-field:focus {
+    outline: none;
+    background-color: rgb(var(--c-surface));
+    box-shadow: 0 0 0 2px var(--ring);
+  }
+
+  /* 链接下划线展开动画 */
+  .link-underline {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1.5px;
+    background-position: 50% 100%;
+    background-repeat: no-repeat;
+    transition: background-size 0.25s ease;
+  }
+  .link-underline:hover {
+    background-size: 100% 1.5px;
+  }
+
+  /* 评论嵌套缩进 */
+  .comment-nested {
+    @apply ml-6 pl-4;
+    border-left: 2px solid rgb(var(--c-border));
+  }
+}
+
+@layer utilities {
+  /* 页面过渡动画 */
+  .page-enter {
+    animation: pageEnter 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @keyframes pageEnter {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* 卡片 stagger 入场 */
+  .stagger-item {
+    opacity: 0;
+    animation: staggerIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  @keyframes staggerIn {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Modal 展开 */
+  .modal-enter {
+    animation: modalEnter 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes modalEnter {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Drawer 遮罩 */
+  .drawer-overlay {
+    background-color: rgb(0 0 0 / 0.4);
+    backdrop-filter: blur(4px);
+  }
+
+  /* 标签云缩放 */
+  .tag-cloud-item {
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+      color 0.2s ease;
+  }
+  .tag-cloud-item:hover {
+    transform: scale(1.08);
+  }
+
+  /* 装饰性背景光点 — Magic UI 微光 */
+  .glow-orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 0.3s ease;
+  }
+  [data-theme='dark'] .glow-orb {
+    opacity: 0.15;
+  }
+}
+
+/* 文章正文排版 — Swiss Modernism 阅读优先 */
+.prose-blog h2 {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: rgb(var(--c-fg));
+}
+.prose-blog h3 {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.5;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: rgb(var(--c-fg));
+}
+.prose-blog p {
+  font-size: 1.125rem;
+  line-height: 1.8;
+  margin-bottom: 1.5rem;
+  color: rgb(var(--c-fg));
+}
+.prose-blog code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9em;
+  background-color: rgb(var(--c-fg) / 0.07);
+  border-radius: 0.375rem;
+  padding: 0.125rem 0.375rem;
+}
+.prose-blog pre {
+  background-color: rgb(var(--c-fg) / 0.07);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  margin-bottom: 1.5rem;
+}
+.prose-blog pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+.prose-blog blockquote {
+  border-left: 3px solid rgb(var(--c-border));
+  padding-left: 1.25rem;
+  margin: 1.5rem 0;
+  color: rgb(var(--c-muted));
+  font-style: italic;
+}
+.prose-blog a {
+  color: rgb(var(--c-accent));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prose-blog ul,
+.prose-blog ol {
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+}
+.prose-blog li {
+  font-size: 1.125rem;
+  line-height: 1.8;
+  margin-bottom: 0.5rem;
+  color: rgb(var(--c-fg));
+}
+
+/* reduced-motion 支持 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
