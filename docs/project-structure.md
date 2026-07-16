@@ -2,7 +2,7 @@
 
 ## 概述
 
-`little` 是一个基于 Monorepo 架构的轻量级博客系统。前端使用 **Lit + Vite**，后端使用 **Golang**，以文件系统 Markdown 文件为文章数据源，SQLite 存储评论。
+`little` 是一个基于 Monorepo 架构的轻量级博客系统。前端使用 **Lit + Vite**，后端使用 **Golang**，以文件系统 Markdown 文件为文章数据源，PostgreSQL 存储评论。
 
 ```
 little/
@@ -81,9 +81,9 @@ server/
 │   │   └── comment.go            # Comment 结构体
 │   ├── repository/          # 数据访问层
 │   │   ├── post.go               # 读取/解析 Markdown 文件
-│   │   └── comment.go            # SQLite CRUD
+│   │   └── comment.go            # PostgreSQL CRUD
 │   ├── db/
-│   │   └── sqlite.go             # SQLite 连接 & 建表
+│   │   └── postgres.go          # PostgreSQL 连接 & 建表
 │   └── middleware/
 │       └── cors.go               # CORS 中间件
 ├── content/                 # Markdown 文章存放
@@ -107,7 +107,7 @@ bun scripts/list-posts.ts                  # 列出所有文章
 |------|------|
 | `Dockerfile.frontend` | 多阶段构建：bun build → nginx alpine |
 | `Dockerfile.server` | 多阶段构建：go build → alpine |
-| `docker-compose.yml` | 编排 frontend + server，挂载文章目录和 SQLite 数据 |
+| `docker-compose.yml` | 编排 frontend + server + PostgreSQL，挂载文章目录 |
 
 ### `docs/` — 项目文档
 
@@ -137,12 +137,12 @@ bun scripts/list-posts.ts                  # 列出所有文章
 │  api.ts      │                   │      │       │
 │      │       │                   │  repository/ │
 │      ▼       │                   │   │     │    │
-│   marked     │                   │  .md   SQLite│
+│   marked     │                   │  .md  PostgreSQL│
 │  (渲染)      │                   │  文件   数据库 │
 └──────────────┘                   └──────────────┘
 ```
 
-1. **Go Server** 启动时加载所有 `.md` 文件到内存，初始化 SQLite
+1. **Go Server** 启动时加载所有 `.md` 文件到内存，连接 PostgreSQL
 2. **Lit SPA** 通过 `api.ts` 请求 HTTP API 获取数据
 3. **marked** 在前端将 Markdown 渲染为 HTML
-4. 评论通过 API 写入 SQLite，读取时在后端组装为嵌套结构
+4. 评论通过 API 写入 PostgreSQL，读取时在后端组装为嵌套结构

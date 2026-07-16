@@ -11,9 +11,8 @@ packages/server/go.sum
 # Bun
 bun.lockb
 
-# SQLite
+# PostgreSQL
 data/
-*.db
 
 # IDE
 .idea/

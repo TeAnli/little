@@ -143,10 +143,25 @@ services:
       - "8080:8080"
     volumes:
       - ./app/backend/content:/app/content   # 文章热挂载
-      - ./data:/app/data                         # SQLite 持久化
     environment:
-      - DATA_DIR=/app/data
       - CONTENT_DIR=/app/content
+      - DATABASE_URL=postgres://little:little@db:5432/little?sslmode=disable
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: little
+      POSTGRES_PASSWORD: little
+      POSTGRES_DB: little
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  pgdata:
 ```
 
 ---
@@ -185,9 +200,9 @@ docker-compose -f docker/docker-compose.yml up -d --build
 | 数据 | 存储位置 | 挂载方式 |
 |------|----------|----------|
 | 文章 (.md) | `app/backend/content/` | Docker volume 挂载到 `/app/content` |
-| 评论 (SQLite) | `data/` | Docker volume 挂载到 `/app/data` |
+| 评论 (PostgreSQL) | PostgreSQL 容器 | Docker volume `pgdata` 持久化 |
 
-> SQLite 数据库文件 `data/comments.db` 在容器重启后不丢失。
+> PostgreSQL 数据通过 `pgdata` volume 持久化，容器重启后不丢失。
 
 ---
 
@@ -196,11 +211,10 @@ docker-compose -f docker/docker-compose.yml up -d --build
 ```
 little/
 ├── app/backend/content/posts/*.md   ← 新增/修改文章只需编辑这里
-├── data/comments.db                     ← SQLite 自动创建，持久化评论
 ├── docker/
 │   ├── Dockerfile.frontend
 │   ├── Dockerfile.server
-│   └── docker-compose.yml               ← docker-compose -f 指向这里
+│   └── docker-compose.yml           ← docker-compose -f 指向这里
 └── ...
 ```
 
@@ -212,6 +226,6 @@ little/
 |------|--------|------|
 | `SERVER_PORT` | `8080` | 后端监听端口 |
 | `CONTENT_DIR` | `./content` | Markdown 文章目录 |
-| `DATA_DIR` | `./data` | SQLite 数据库目录 |
+| `DATABASE_URL` | - | PostgreSQL 连接串 |
 | `SITE_TITLE` | `Little Blog` | 站点名称 |
 | `SITE_URL` | `http://localhost` | 站点 URL (RSS 使用) |

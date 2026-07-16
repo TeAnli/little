@@ -8,6 +8,7 @@
 
 | 日期 | 更新 |
 |------|------|
+| 2026-07-16 | 数据库切换：SQLite → PostgreSQL (pgx)，更新 docker-compose 编排 |
 | 2026-07-16 | 添加卡片&表情组件：post-card、tag-badge、theme-switcher、rss-link + 全局样式 + 类型定义 |
 | 2026-07-16 | 路由系统优化：RouteConfig 内置 render |
 | 2026-07-16 | API 层模块化：axios 客户端 + 文章 CRUD + 端点评级 |
@@ -21,6 +22,13 @@
 ## 详细记录
 
 ### 2026-07-16
+
+**数据库 & 部署**
+- `go.mod`：`mattn/go-sqlite3` → `jackc/pgx/v5`
+- `.gitignore`：移除 `*.db`
+- `docs/deployment.md`：docker-compose 新增 `db` 服务 (postgres:16-alpine)，环境变量 `DATABASE_URL`
+- `docs/project-structure.md`：SQLite → PostgreSQL 全文替换
+- 评论表 SQL：`INTEGER AUTOINCREMENT` → `SERIAL`，`DATETIME` → `TIMESTAMPTZ`
 
 **卡片 & 表情组件**
 - `components/post-card.ts`：文章卡片（HeroUI 无边框 + Magic UI spring hover + stagger 入场动画）
