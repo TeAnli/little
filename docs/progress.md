@@ -8,6 +8,7 @@
 
 | 日期 | 更新 |
 |------|------|
+| 2026-07-16 | API 层模块化：axios 客户端 + 文章 CRUD + 端点评级 |
 | 2026-07-16 | 路由系统重构：引擎/配置分离 |
 | 2026-07-16 | 添加前端工具函数：主题管理、时间格式化、图标 |
 | 2026-07-16 | 搭建前端工程骨架：Lit + Vite + Tailwind + TypeScript |
@@ -23,6 +24,15 @@
 - `router/router.ts`：路由管理器，提供 `registerRoute` / `registerRoutes` 注册、`parseHash` 解析、`navigate` 导航、`onRouteChange` 监听
 - `router/routes.ts`：路由配置表，纯数组定义，语义清晰
 - 引擎层不依赖配置层，支持动态追加路由配置
+
+**API 层**
+- `api/url.ts`：BASE_URL + endpoints 端点配置，按模块分级管理
+- `api/client.ts`：Axios 实例 + 请求/响应拦截器 + `request`（GET）/ `post`（POST）/ `del`（DELETE）封装
+- `api/posts.ts`：文章 CRUD（`getPosts` / `getPost` / `createPost` / `deletePost`）
+- `api/tags.ts`：标签列表 `getTags`
+- `api/search.ts`：全文搜索 `search`
+- `api/comments.ts`：评论 `getComments` / `postComment`
+- `api/index.ts`：统一导出入口
 
 **前端工具函数**
 - `icons.ts`：Iconify 图标工具，Material Design Icon 风格图标
