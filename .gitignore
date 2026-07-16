@@ -1,0 +1,29 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.env
+.env.local
+
+# Go
+packages/server/bin/
+packages/server/go.sum
+
+# Bun
+bun.lockb
+
+# SQLite
+data/
+*.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml

@@ -1,0 +1,13 @@
+{
+  "name": "little-blog",
+  "private": true,
+  "workspaces": ["app/frontend"],
+  "scripts": {
+    "dev:frontend": "cd app/frontend && bun run dev",
+    "dev:backend": "cd app/backend && go run ./cmd/server",
+    "build:frontend": "cd app/frontend && bun run build",
+    "build:backend": "cd app/backend && go build -o bin/server ./cmd/server",
+    "new-post": "bun scripts/new-post.ts",
+    "list-posts": "bun scripts/list-posts.ts"
+  }
+}
