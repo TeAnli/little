@@ -1,0 +1,4 @@
+# Bun 安装配置
+# Windows 上跨卷硬链接会静默失败导致 node_modules 为空，改用 copyfile 复制
+[install]
+backend = "copyfile"
