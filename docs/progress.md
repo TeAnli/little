@@ -8,6 +8,7 @@
 
 | 日期 | 更新 |
 |------|------|
+| 2026-07-17 | 根组件 app.ts：Shell 布局（Header+Outlet+Footer）、路由 keyed 重建、主题初始化 |
 | 2026-07-17 | 导航组件：app-header（毛玻璃+Drawer侧滑）、search-bar（Cmd+K快捷键） |
 | 2026-07-17 | 评论组件：comment-section、comment-form、comment-item（表单验证+嵌套回复） |
 | 2026-07-17 | 列表组件：post-card（卡片+stagger入场）、post-list（列表+分页+骨架屏+空状态） |
@@ -26,6 +27,9 @@
 ## 详细记录
 
 ### 2026-07-17
+
+**根组件**
+- `app.ts`：Shell 布局（Header + router-outlet + Footer）+ 路由 keyed 重建 + 主题初始化 + 组件批量注册
 
 **导航 & 搜索**
 - `components/app-header.ts`：毛玻璃导航栏 + 桌面导航 + 移动端 Drawer 侧滑菜单 + 激活态高亮
