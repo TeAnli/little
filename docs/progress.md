@@ -8,6 +8,7 @@
 
 | 日期 | 更新 |
 |------|------|
+| 2026-07-17 | 列表组件：post-card（卡片+stagger入场）、post-list（列表+分页+骨架屏+空状态） |
 | 2026-07-17 | 页面实现：home-page、post-page、tags-page、search-page + markdown-viewer |
 | 2026-07-16 | 数据库切换：SQLite → PostgreSQL (pgx)，更新 docker-compose 编排 |
 | 2026-07-16 | 添加卡片&表情组件：post-card、tag-badge、theme-switcher、rss-link + 全局样式 + 类型定义 |
@@ -23,6 +24,10 @@
 ## 详细记录
 
 ### 2026-07-17
+
+**列表组件**
+- `components/post-card.ts`：文章卡片 — HeroUI 无边框 + Magic UI spring hover + stagger 入场动画，支持键盘导航
+- `components/post-list.ts`：文章列表 — 骨架屏 loading + 空状态 + 分页器（Previous/Next）
 
 **页面 & 渲染组件**
 - `components/markdown-viewer.ts`：marked 库渲染 Markdown，自定义 `prose-blog` 排版样式
