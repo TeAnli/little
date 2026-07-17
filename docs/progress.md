@@ -8,6 +8,7 @@
 
 | 日期 | 更新 |
 |------|------|
+| 2026-07-17 | 页面实现：home-page、post-page、tags-page、search-page + markdown-viewer |
 | 2026-07-16 | 数据库切换：SQLite → PostgreSQL (pgx)，更新 docker-compose 编排 |
 | 2026-07-16 | 添加卡片&表情组件：post-card、tag-badge、theme-switcher、rss-link + 全局样式 + 类型定义 |
 | 2026-07-16 | 路由系统优化：RouteConfig 内置 render |
@@ -20,6 +21,15 @@
 ---
 
 ## 详细记录
+
+### 2026-07-17
+
+**页面 & 渲染组件**
+- `components/markdown-viewer.ts`：marked 库渲染 Markdown，自定义 `prose-blog` 排版样式
+- `pages/home-page.ts`：首页 — 文章列表 + 分页 + 标签筛选 + loading 状态
+- `pages/post-page.ts`：文章详情 — Markdown 正文 + 评论区 + 404 处理
+- `pages/tags-page.ts`：标签云 — 按文章数排序 + 大小缩放 + 点击跳转
+- `pages/search-page.ts`：搜索结果 — 关键词高亮 + 空状态 + 无结果提示
 
 ### 2026-07-16
 
