@@ -8,6 +8,7 @@
 
 | 日期 | 更新 |
 |------|------|
+| 2026-07-17 | 评论组件：comment-section、comment-form、comment-item（表单验证+嵌套回复） |
 | 2026-07-17 | 列表组件：post-card（卡片+stagger入场）、post-list（列表+分页+骨架屏+空状态） |
 | 2026-07-17 | 页面实现：home-page、post-page、tags-page、search-page + markdown-viewer |
 | 2026-07-16 | 数据库切换：SQLite → PostgreSQL (pgx)，更新 docker-compose 编排 |
@@ -24,6 +25,11 @@
 ## 详细记录
 
 ### 2026-07-17
+
+**评论组件**
+- `components/comment-section.ts`：评论容器 — 加载评论列表 + 空状态 + 顶级发表表单
+- `components/comment-form.ts`：评论表单 — 用户名/邮箱/内容字段 + 表单验证 + submit 事件
+- `components/comment-item.ts`：单条评论 — 嵌套子回复展示 + 内联回复表单（点击 Reply 展开）
 
 **列表组件**
 - `components/post-card.ts`：文章卡片 — HeroUI 无边框 + Magic UI spring hover + stagger 入场动画，支持键盘导航
