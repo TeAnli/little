@@ -8,6 +8,7 @@
 
 | 日期 | 更新 |
 |------|------|
+| 2026-07-17 | 导航组件：app-header（毛玻璃+Drawer侧滑）、search-bar（Cmd+K快捷键） |
 | 2026-07-17 | 评论组件：comment-section、comment-form、comment-item（表单验证+嵌套回复） |
 | 2026-07-17 | 列表组件：post-card（卡片+stagger入场）、post-list（列表+分页+骨架屏+空状态） |
 | 2026-07-17 | 页面实现：home-page、post-page、tags-page、search-page + markdown-viewer |
@@ -25,6 +26,10 @@
 ## 详细记录
 
 ### 2026-07-17
+
+**导航 & 搜索**
+- `components/app-header.ts`：毛玻璃导航栏 + 桌面导航 + 移动端 Drawer 侧滑菜单 + 激活态高亮
+- `components/search-bar.ts`：搜索输入框 — 回车/Cmd+K 触发导航 + focus 焦点样式
 
 **评论组件**
 - `components/comment-section.ts`：评论容器 — 加载评论列表 + 空状态 + 顶级发表表单

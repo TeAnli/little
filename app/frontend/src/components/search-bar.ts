@@ -1,0 +1,151 @@
+import { LitElement, html, nothing } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
+import { search as searchApi } from '../api';
+import { navigate } from '../router/router';
+import { icons } from '../utils/icons';
+import type { Post } from '../types';
+
+// 搜索栏 — 触发按钮 + 展开式 Modal（HeroUI 无边框 + Magic UI 弹性入场）
+@customElement('search-bar')
+class SearchBar extends LitElement {
+  @state() open = false;
+  @state() query = '';
+  @state() results: Post[] = [];
+  @state() loading = false;
+
+  createRenderRoot() {
+    return this;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    document.addEventListener('keydown', this._onKeydown);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    document.removeEventListener('keydown', this._onKeydown);
+  }
+
+  private _onKeydown = (e: KeyboardEvent) => {
+    if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      this.openModal();
+    }
+    if (e.key === 'Escape' && this.open) {
+      this.closeModal();
+    }
+  };
+
+  openModal() {
+    this.open = true;
+    requestAnimationFrame(() => {
+      const input = this.querySelector('#search-input') as HTMLInputElement | null;
+      input?.focus();
+    });
+  }
+
+  closeModal() {
+    this.open = false;
+    this.query = '';
+    this.results = [];
+  }
+
+  private async _onInput(e: InputEvent) {
+    this.query = (e.target as HTMLInputElement).value;
+    if (!this.query.trim()) {
+      this.results = [];
+      return;
+    }
+    this.loading = true;
+    try {
+      const res = await searchApi(this.query);
+      this.results = res.results.slice(0, 6);
+    } catch {
+      this.results = [];
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  private _goToPost(slug: string) {
+    this.closeModal();
+    navigate(`/post/${slug}`);
+  }
+
+  private _submitSearch() {
+    if (!this.query.trim()) return;
+    this.closeModal();
+    navigate(`/search?q=${encodeURIComponent(this.query)}`);
+  }
+
+  render() {
+    return html`
+      <button
+        class="btn-ghost p-2.5 rounded-xl text-muted hover:text-fg cursor-pointer"
+        @click=${() => this.openModal()}
+        aria-label="搜索文章"
+      >
+        ${icons.search(18)}
+      </button>
+
+      ${this.open
+        ? html`
+            <div class="fixed inset-0 z-50" @click=${(e: Event) => {
+              if (e.target === e.currentTarget) this.closeModal();
+            }}>
+              <div class="drawer-overlay absolute inset-0"></div>
+              <div class="relative max-w-2xl mx-auto mt-[10vh] px-4 modal-enter">
+                <div class="bg-surface rounded-2xl overflow-hidden" style="box-shadow: var(--shadow-lg)">
+                  <div class="flex items-center gap-3 px-5 py-4 border-b border-line">
+                    <span class="text-muted shrink-0">${icons.search(20)}</span>
+                    <input
+                      id="search-input"
+                      type="text"
+                      placeholder="搜索文章..."
+                      .value=${this.query}
+                      @input=${this._onInput}
+                      @keydown=${(e: KeyboardEvent) => {
+                        if (e.key === 'Enter') this._submitSearch();
+                      }}
+                      class="flex-1 bg-transparent outline-none text-fg placeholder:text-muted text-base"
+                    />
+                    <button class="badge px-2.5 py-1" @click=${() => this.closeModal()}>ESC</button>
+                  </div>
+                  <div class="max-h-[50vh] overflow-y-auto">
+                    ${this._renderResults()}
+                  </div>
+                </div>
+              </div>
+            </div>
+          `
+        : nothing}
+    `;
+  }
+
+  private _renderResults() {
+    if (!this.query.trim()) {
+      return html`<div class="p-6 text-center text-sm text-muted">输入关键词搜索文章标题与内容，按 Enter 查看全部结果</div>`;
+    }
+    if (this.loading) {
+      return html`<div class="p-6 text-center text-sm text-muted">搜索中...</div>`;
+    }
+    if (this.results.length === 0) {
+      return html`<div class="p-6 text-center text-sm text-muted">没有匹配的文章</div>`;
+    }
+    return this.results.map(
+      (p) => html`
+        <button
+          class="w-full flex items-start gap-3 px-5 py-3.5 border-b border-line last:border-0 transition-colors text-left hover:bg-[rgb(var(--c-fg)/0.05)] cursor-pointer"
+          @click=${() => this._goToPost(p.slug)}
+        >
+          <span class="text-muted mt-0.5 shrink-0">${icons.search(16)}</span>
+          <span class="min-w-0">
+            <span class="block text-sm font-medium text-fg truncate">${p.title}</span>
+            <span class="block text-xs text-muted truncate">${p.date}</span>
+          </span>
+        </button>
+      `
+    );
+  }
+}
