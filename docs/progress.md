@@ -8,6 +8,7 @@
 
 | 日期 | 更新 |
 |------|------|
+| 2026-07-18 | Docker 容器化：前端 Nginx + 后端 Alpine + PostgreSQL 编排 |
 | 2026-07-17 | RSS Feed + CORS 中间件，7 个 API 全部就位 |
 | 2026-07-17 | 评论 CRUD + API（嵌套回复，GET/POST /api/posts/:slug/comments） |
 | 2026-07-17 | PostgreSQL 数据库连接 + Comment 评论模型 |
