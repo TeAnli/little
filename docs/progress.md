@@ -8,6 +8,7 @@
 
 | 日期 | 更新 |
 |------|------|
+| 2026-07-17 | 搜索 API：`GET /api/search?q=`，标题+正文匹配 + 第二篇示例文章 |
 | 2026-07-17 | 标签 API：`GET /api/tags`，聚合文章标签按数量降序 |
 | 2026-07-17 | 文章 API：列表/详情/分页/标签筛选，Service + Handler 分层 |
 | 2026-07-17 | Post 数据模型 + Markdown 文件解析器（YAML front matter）+ 示例文章 |
