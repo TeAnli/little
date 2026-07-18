@@ -8,6 +8,7 @@
 
 | 日期 | 更新 |
 |------|------|
+| 2026-07-18 | Bun 脚本：new-post（交互式创建文章）、list-posts（列出所有文章） |
 | 2026-07-18 | Docker 容器化：前端 Nginx + 后端 Alpine + PostgreSQL 编排 |
 | 2026-07-17 | RSS Feed + CORS 中间件，7 个 API 全部就位 |
 | 2026-07-17 | 评论 CRUD + API（嵌套回复，GET/POST /api/posts/:slug/comments） |
