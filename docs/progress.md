@@ -8,6 +8,7 @@
 
 | 日期 | 更新 |
 |------|------|
+| 2026-07-17 | RSS Feed + CORS 中间件，7 个 API 全部就位 |
 | 2026-07-17 | 评论 CRUD + API（嵌套回复，GET/POST /api/posts/:slug/comments） |
 | 2026-07-17 | PostgreSQL 数据库连接 + Comment 评论模型 |
 | 2026-07-17 | 搜索 API：`GET /api/search?q=`，标题+正文匹配 + 第二篇示例文章 |
