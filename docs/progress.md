@@ -36,6 +36,22 @@
 
 ### 2026-07-17
 
+**后端 API（Gin + PostgreSQL）8 步渐进搭建**
+- `cmd/server/main.go`：Gin 路由注册，7 个端点，CORS + PostgreSQL 初始化
+- `internal/model/post.go`：Post / PostListResponse / Tag 结构体
+- `internal/model/comment.go`：Comment / CommentPayload 结构体
+- `internal/db/postgres.go`：pgx 连接 + comments 建表
+- `internal/repository/post.go`：Markdown 文件解析（YAML front matter），查询 All/BySlug/Tags
+- `internal/repository/comment.go`：评论 CRUD，嵌套树组装（parent_id → replies）
+- `internal/service/post.go`：列表分页/标签筛选/搜索 snippet 生成
+- `internal/handler/post.go`：GET /api/posts, GET /api/posts/:slug
+- `internal/handler/tag.go`：GET /api/tags
+- `internal/handler/search.go`：GET /api/search?q=
+- `internal/handler/comment.go`：GET/POST /api/posts/:slug/comments
+- `internal/handler/rss.go`：GET /api/rss（RSS 2.0）
+- `internal/middleware/cors.go`：Gin CORS 中间件
+- `content/posts/`：hello-world.md, getting-started.md
+
 **根组件**
 - `app.ts`：Shell 布局（Header + router-outlet + Footer）+ 路由 keyed 重建 + 主题初始化 + 组件批量注册
 
