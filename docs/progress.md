@@ -8,6 +8,7 @@
 
 | 日期 | 更新 |
 |------|------|
+| 2026-07-17 | Post 数据模型 + Markdown 文件解析器（YAML front matter）+ 示例文章 |
 | 2026-07-17 | 搭建 Gin 最小骨架，`/api/health` 端点就绪 |
 | 2026-07-17 | 根组件 app.ts：Shell 布局（Header+Outlet+Footer）、路由 keyed 重建、主题初始化 |
 | 2026-07-17 | 导航组件：app-header（毛玻璃+Drawer侧滑）、search-bar（Cmd+K快捷键） |
