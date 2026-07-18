@@ -8,6 +8,7 @@
 
 | 日期 | 更新 |
 |------|------|
+| 2026-07-17 | 文章 API：列表/详情/分页/标签筛选，Service + Handler 分层 |
 | 2026-07-17 | Post 数据模型 + Markdown 文件解析器（YAML front matter）+ 示例文章 |
 | 2026-07-17 | 搭建 Gin 最小骨架，`/api/health` 端点就绪 |
 | 2026-07-17 | 根组件 app.ts：Shell 布局（Header+Outlet+Footer）、路由 keyed 重建、主题初始化 |
