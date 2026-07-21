@@ -109,7 +109,7 @@ class SearchPage extends LitElement {
 
     return html`
       <div class="flex flex-col gap-5">
-        ${this.results.map((p, i) => html`<post-card .post=${p} .index=${i}></post-card>`)}
+        ${this.results.map((p, i) => html`<post-card .post=${p} .index=${i} .highlight=${this.q}></post-card>`)}
       </div>
     `;
   }

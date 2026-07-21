@@ -1,4 +1,5 @@
 import { LitElement, html, nothing } from 'lit';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { customElement, property } from 'lit/decorators.js';
 import { navigate } from '../router/router';
 import { icons } from '../utils/icons';
@@ -10,6 +11,7 @@ import type { Post } from '../types';
 class PostCard extends LitElement {
   @property({ type: Object }) post?: Post;
   @property({ type: Number }) index = 0;
+  @property({ type: String }) highlight = '';
 
   createRenderRoot() {
     return this;
@@ -45,7 +47,7 @@ class PostCard extends LitElement {
           ${icons.clock(13)}
           <time>${formatDate(p.date)}</time>
         </div>
-        <p class="text-muted text-base leading-relaxed mb-4">${p.summary}</p>
+        <p class="text-muted text-base leading-relaxed mb-4">${highlightText(p.summary, this.highlight)}</p>
         <div class="flex flex-wrap gap-2">
           ${p.tags.map(
             (t) => html`
@@ -59,4 +61,15 @@ class PostCard extends LitElement {
       </article>
     `;
   }
+}
+
+function highlightText(text: string, q: string) {
+  if (!q) return text;
+  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`(${escaped})`, 'gi');
+  const parts = text.split(re);
+  return unsafeHTML(parts.map(p =>
+    re.test(p) ? `<mark class="bg-yellow-200 dark:bg-yellow-800 rounded px-0.5">${p}</mark>`
+    : p.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  ).join(''));
 }
