@@ -8,6 +8,7 @@
 
 | 日期 | 更新 |
 |------|------|
+| 2026-07-19 | 登录 RSA 加密：后端 2048 位密钥对 + 公钥接口，前端 Web Crypto API 加密 |
 | 2026-07-19 | 文章管理 API：POST/PUT/DELETE /api/posts，认证保护 + 路由分组 |
 | 2026-07-19 | 认证系统：Bearer token 中间件 + 管理员登录 API |
 | 2026-07-19 | 文章管理数据层：Create/Update/Delete payload + repo 文件写操作 + service |
