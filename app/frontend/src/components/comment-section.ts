@@ -71,12 +71,13 @@ class CommentSection extends LitElement {
 
       <div class="mt-8 flex flex-col gap-4">
         ${this.loading
-          ? html`
+          ? Array.from({ length: 3 }).map(() => html`
               <div class="card p-5 animate-pulse">
-                <div class="h-4 bg-line rounded w-1/3 mb-3"></div>
-                <div class="h-4 bg-line rounded w-full"></div>
+                <div class="h-4 bg-line rounded w-1/4 mb-3"></div>
+                <div class="h-4 bg-line rounded w-full mb-2"></div>
+                <div class="h-4 bg-line rounded w-2/3"></div>
               </div>
-            `
+            `)
           : this.comments.length === 0
             ? html`<div class="card p-8 text-center text-muted text-sm">还没有评论，来发表第一条吧</div>`
             : this.comments.map((c) => html`<comment-item .comment=${c}></comment-item>`)}
