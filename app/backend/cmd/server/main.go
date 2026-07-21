@@ -34,6 +34,7 @@ func main() {
 	searchH := handler.NewSearchHandler(postRepo)
 	commentH := handler.NewCommentHandler(commentRepo)
 	rssH := handler.NewRSSHandler(postRepo)
+	authH := handler.NewAuthHandler()
 
 	r := gin.Default()
 	r.Use(middleware.CORS())
@@ -41,6 +42,8 @@ func main() {
 	api := r.Group("/api")
 	{
 		api.GET("/health", func(c *gin.Context) { c.JSON(200, gin.H{"status": "ok"}) })
+		api.POST("/auth/login", authH.Login)
+
 		api.GET("/posts", postH.List)
 		api.GET("/posts/:slug", postH.Get)
 		api.GET("/posts/:slug/comments", commentH.List)
@@ -48,6 +51,15 @@ func main() {
 		api.GET("/tags", tagH.List)
 		api.GET("/search", searchH.Search)
 		api.GET("/rss", rssH.Feed)
+
+		// Management — auth required
+		mgmt := api.Group("")
+		mgmt.Use(middleware.Auth())
+		{
+			mgmt.POST("/posts", postH.Create)
+			mgmt.PUT("/posts/:slug", postH.Update)
+			mgmt.DELETE("/posts/:slug", postH.Delete)
+		}
 	}
 
 	port := os.Getenv("SERVER_PORT")
