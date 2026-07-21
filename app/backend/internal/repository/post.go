@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"time"
 
 	"little-blog/backend/internal/model"
 )
@@ -118,6 +119,7 @@ func (r *PostRepo) Delete(slug string) error {
 }
 
 func Slugify(title string) string {
+	// keep ASCII alnum + dash, convert spaces to dash
 	s := strings.ToLower(title)
 	var b strings.Builder
 	for _, r := range s {
@@ -126,10 +128,12 @@ func Slugify(title string) string {
 		} else if r == ' ' || r == '_' {
 			b.WriteRune('-')
 		}
+		// skip CJK and other non-ASCII (will be replaced by timestamp suffix if empty)
 	}
 	result := strings.Trim(b.String(), "-")
-	if result == "" {
-		result = fmt.Sprintf("post-%d", 0)
+	if len(result) < 2 {
+		result = fmt.Sprintf("post-%d", time.Now().UnixNano()/1e6)
 	}
 	return result
 }
+

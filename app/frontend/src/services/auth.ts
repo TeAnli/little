@@ -16,6 +16,21 @@ export function isLoggedIn(): boolean {
   return !!getToken();
 }
 
+export async function verifyToken(): Promise<boolean> {
+  const token = getToken();
+  if (!token) return false;
+  try {
+    const res = await fetch('/api/auth/verify', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (!data.valid) { clearToken(); return false; }
+    return true;
+  } catch {
+    return !!getToken(); // offline → trust local
+  }
+}
+
 async function fetchPublicKey(): Promise<CryptoKey> {
   const res = await fetch('/api/auth/public-key');
   const data = await res.json();
