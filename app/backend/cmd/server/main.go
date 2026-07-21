@@ -17,12 +17,7 @@ func main() {
 	database := db.Init()
 	defer database.Close()
 
-	contentDir := os.Getenv("CONTENT_DIR")
-	if contentDir == "" {
-		contentDir = "./content"
-	}
-
-	postRepo, err := repository.NewPostRepo(contentDir)
+	postRepo, err := repository.NewPostRepo(database)
 	if err != nil {
 		log.Fatalf("failed to load posts: %v", err)
 	}
@@ -42,6 +37,7 @@ func main() {
 	api := r.Group("/api")
 	{
 		api.GET("/health", func(c *gin.Context) { c.JSON(200, gin.H{"status": "ok"}) })
+
 		api.GET("/auth/public-key", authH.PublicKey)
 		api.POST("/auth/login", authH.Login)
 
@@ -53,9 +49,8 @@ func main() {
 		api.GET("/search", searchH.Search)
 		api.GET("/rss", rssH.Feed)
 
-		// Management — auth required
 		mgmt := api.Group("")
-		mgmt.Use(middleware.Auth())
+		mgmt.Use(middleware.Auth(authH))
 		{
 			mgmt.POST("/posts", postH.Create)
 			mgmt.PUT("/posts/:slug", postH.Update)

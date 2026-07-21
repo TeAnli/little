@@ -1,6 +1,4 @@
-FROM golang:1.22-alpine AS builder
-
-RUN apk add --no-cache gcc musl-dev
+FROM golang:1.23-alpine AS builder
 
 WORKDIR /build
 COPY go.mod go.sum ./
@@ -13,7 +11,6 @@ FROM alpine:3.20
 
 WORKDIR /app
 COPY --from=builder /build/server .
-COPY content/ ./content/
 
 EXPOSE 8080
 CMD ["./server"]

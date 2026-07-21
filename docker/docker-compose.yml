@@ -3,7 +3,7 @@ services:
     image: postgres:16-alpine
     environment:
       POSTGRES_USER: little
-      POSTGRES_PASSWORD: little
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-little}
       POSTGRES_DB: little
     ports:
       - "5432:5432"
@@ -17,8 +17,8 @@ services:
     ports:
       - "8080:8080"
     environment:
-      DATABASE_URL: postgres://little:little@db:5432/little?sslmode=disable
-      CONTENT_DIR: /app/content
+      DATABASE_URL: postgres://little:${DB_PASSWORD:-little}@db:5432/little?sslmode=disable
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin}
       SITE_TITLE: "Little Blog"
       SITE_URL: "http://localhost"
     depends_on:
