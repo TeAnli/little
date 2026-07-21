@@ -10,7 +10,9 @@ export default {
         mono: ['"JetBrains Mono"', 'monospace'],
       },
       transitionTimingFunction: {
-        spring: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+        // 精致 expo-out，替代弹性 spring
+        'out-expo': 'cubic-bezier(0.16, 1, 0.3, 1)',
+        'in-out-expo': 'cubic-bezier(0.65, 0, 0.35, 1)',
       },
       maxWidth: {
         prose: '720px',
@@ -21,7 +23,9 @@ export default {
         surface: 'rgb(var(--c-surface) / <alpha-value>)',
         fg: 'rgb(var(--c-fg) / <alpha-value>)',
         muted: 'rgb(var(--c-muted) / <alpha-value>)',
+        subtle: 'rgb(var(--c-subtle) / <alpha-value>)',
         line: 'rgb(var(--c-border) / <alpha-value>)',
+        hairline: 'rgb(var(--c-hairline) / <alpha-value>)',
         accent: 'rgb(var(--c-accent) / <alpha-value>)',
       },
     },

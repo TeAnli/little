@@ -5,7 +5,7 @@ import { navigate } from '../router/router';
 import { icons } from '../utils/icons';
 import type { Post } from '../types';
 
-// 搜索栏 — 触发按钮 + 展开式 Modal（HeroUI 无边框 + Magic UI 弹性入场）
+// 搜索栏 — 触发按钮 + 展开式 Modal（精致极简）
 @customElement('search-bar')
 class SearchBar extends LitElement {
   @state() open = false;
@@ -82,7 +82,7 @@ class SearchBar extends LitElement {
   render() {
     return html`
       <button
-        class="btn-ghost p-2.5 rounded-xl text-muted hover:text-fg cursor-pointer"
+        class="btn-ghost p-2 rounded-[var(--radius-btn)] text-muted hover:text-fg cursor-pointer"
         @click=${() => this.openModal()}
         aria-label="搜索文章"
       >
@@ -94,11 +94,11 @@ class SearchBar extends LitElement {
             <div class="fixed inset-0 z-50" @click=${(e: Event) => {
               if (e.target === e.currentTarget) this.closeModal();
             }}>
-              <div class="drawer-overlay absolute inset-0"></div>
-              <div class="relative max-w-2xl mx-auto mt-[10vh] px-4 modal-enter">
-                <div class="bg-surface rounded-2xl overflow-hidden" style="box-shadow: var(--shadow-lg)">
-                  <div class="flex items-center gap-3 px-5 py-4 border-b border-line">
-                    <span class="text-muted shrink-0">${icons.search(20)}</span>
+              <div class="drawer-overlay overlay-enter absolute inset-0"></div>
+              <div class="relative max-w-xl mx-auto mt-[12vh] px-4 modal-enter">
+                <div class="bg-surface rounded-2xl overflow-hidden border hairline" style="box-shadow: var(--shadow-lg)">
+                  <div class="flex items-center gap-3 px-5 py-4 border-b hairline">
+                    <span class="text-subtle shrink-0">${icons.search(18)}</span>
                     <input
                       id="search-input"
                       type="text"
@@ -108,9 +108,9 @@ class SearchBar extends LitElement {
                       @keydown=${(e: KeyboardEvent) => {
                         if (e.key === 'Enter') this._submitSearch();
                       }}
-                      class="flex-1 bg-transparent outline-none text-fg placeholder:text-muted text-base"
+                      class="flex-1 bg-transparent outline-none text-fg placeholder:text-subtle text-base"
                     />
-                    <button class="badge px-2.5 py-1" @click=${() => this.closeModal()}>ESC</button>
+                    <button class="font-mono text-[10px] text-subtle px-1.5 py-0.5 rounded border hairline bg-base" @click=${() => this.closeModal()}>ESC</button>
                   </div>
                   <div class="max-h-[50vh] overflow-y-auto">
                     ${this._renderResults()}
@@ -125,24 +125,24 @@ class SearchBar extends LitElement {
 
   private _renderResults() {
     if (!this.query.trim()) {
-      return html`<div class="p-6 text-center text-sm text-muted">输入关键词搜索文章标题与内容，按 Enter 查看全部结果</div>`;
+      return html`<div class="p-6 text-center text-sm text-subtle">输入关键词搜索文章标题与内容，按 Enter 查看全部结果</div>`;
     }
     if (this.loading) {
-      return html`<div class="p-6 text-center text-sm text-muted">搜索中...</div>`;
+      return html`<div class="p-6 text-center text-sm text-subtle">搜索中...</div>`;
     }
     if (this.results.length === 0) {
-      return html`<div class="p-6 text-center text-sm text-muted">没有匹配的文章</div>`;
+      return html`<div class="p-6 text-center text-sm text-subtle">没有匹配的文章</div>`;
     }
     return this.results.map(
       (p) => html`
         <button
-          class="w-full flex items-start gap-3 px-5 py-3.5 border-b border-line last:border-0 transition-colors text-left hover:bg-[rgb(var(--c-fg)/0.05)] cursor-pointer"
+          class="w-full flex items-start gap-3 px-5 py-3.5 border-b hairline last:border-0 transition-colors text-left hover:bg-[rgb(var(--c-fg)/0.03)] cursor-pointer"
           @click=${() => this._goToPost(p.slug)}
         >
-          <span class="text-muted mt-0.5 shrink-0">${icons.search(16)}</span>
-          <span class="min-w-0">
+          <span class="text-subtle mt-0.5 shrink-0">${icons.search(15)}</span>
+          <span class="min-w-0 flex-1">
             <span class="block text-sm font-medium text-fg truncate">${p.title}</span>
-            <span class="block text-xs text-muted truncate">${p.date}</span>
+            <span class="block text-xs text-subtle truncate font-mono mt-0.5">${p.date}</span>
           </span>
         </button>
       `

@@ -3,7 +3,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { icons } from '../utils/icons';
 import type { CommentPayload } from '../types';
 
-// 评论/回复表单 — HeroUI 风格表单 + 内联校验
+// 评论/回复表单 — 极简表单 + 内联校验
 @customElement('comment-form')
 class CommentForm extends LitElement {
   username = '';
@@ -64,7 +64,7 @@ class CommentForm extends LitElement {
   render() {
     return html`
       ${this.replyTo
-        ? html`<p class="text-xs text-muted mb-2">回复 @${this.replyTo}</p>`
+        ? html`<p class="text-xs text-subtle mb-3">回复 @${this.replyTo}</p>`
         : nothing}
       <div class="card p-5">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
@@ -73,14 +73,14 @@ class CommentForm extends LitElement {
             placeholder="用户名 *"
             .value=${this.username}
             @input=${(e: InputEvent) => this._update('username', e)}
-            class="input-field px-4 py-2.5 text-sm"
+            class="input-field px-3.5 py-2.5 text-sm"
           />
           <input
             type="email"
             placeholder="邮箱 *"
             .value=${this.email}
             @input=${(e: InputEvent) => this._update('email', e)}
-            class="input-field px-4 py-2.5 text-sm"
+            class="input-field px-3.5 py-2.5 text-sm"
           />
         </div>
         <textarea
@@ -88,19 +88,19 @@ class CommentForm extends LitElement {
           rows="3"
           .value=${this.content}
           @input=${(e: InputEvent) => this._update('content', e)}
-          class="input-field px-4 py-2.5 text-sm mb-3 resize-none"
+          class="input-field px-3.5 py-2.5 text-sm mb-3 resize-none"
         ></textarea>
         ${this.error
           ? html`<p class="text-sm text-red-500 mb-3" role="alert">${this.error}</p>`
           : nothing}
         <div class="flex justify-end">
           <button
-            class="btn-primary px-5 py-2.5 text-sm font-medium inline-flex items-center gap-1.5"
+            class="btn-primary px-4 py-2 text-sm font-medium inline-flex items-center gap-1.5"
             ?disabled=${this.submitting}
             @click=${this._submit}
           >
-            ${icons.send(16)}
-            <span>${this.submitting ? '发送中...' : '发表评论'}</span>
+            ${icons.send(14)}
+            <span>${this.submitting ? '发送中...' : '发表'}</span>
           </button>
         </div>
       </div>

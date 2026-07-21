@@ -58,25 +58,25 @@ class BlogApp extends LitElement {
       <div class="min-h-dvh flex flex-col">
         <app-header></app-header>
 
-        <main class="flex-1 w-full max-w-3xl mx-auto px-4 md:px-6 py-10 md:py-16">
+        <main class="flex-1 w-full max-w-3xl mx-auto px-5 md:px-6 py-12 md:py-20">
           ${this._renderKeyed(routeKey)}
         </main>
 
-        <footer class="border-t border-line mt-16">
-          <div class="max-w-3xl mx-auto px-4 md:px-6 py-10">
+        <footer class="border-t hairline mt-20">
+          <div class="max-w-3xl mx-auto px-5 md:px-6 py-10">
             <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-              <p class="text-sm text-muted">
-                © ${new Date().getFullYear()} Little Blog. Built with Lit + Vite.
+              <p class="text-sm text-subtle">
+                © ${new Date().getFullYear()} Little Blog
               </p>
-              <div class="flex items-center gap-4">
+              <div class="flex items-center gap-6">
                 <a
                   href="#/"
-                  class="text-sm text-muted hover:text-fg link-underline cursor-pointer"
+                  class="text-sm text-muted hover:text-fg transition-colors cursor-pointer"
                   @click=${() => navigate('/')}
                 >Home</a>
                 <a
                   href="#/tags"
-                  class="text-sm text-muted hover:text-fg link-underline cursor-pointer"
+                  class="text-sm text-muted hover:text-fg transition-colors cursor-pointer"
                   @click=${() => navigate('/tags')}
                 >Tags</a>
                 <rss-link></rss-link>

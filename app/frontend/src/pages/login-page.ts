@@ -31,18 +31,20 @@ class LoginPage extends LitElement {
 
   render() {
     return html`
-      <div class="max-w-sm mx-auto pt-12 md:pt-20 page-enter">
-        <h1 class="font-serif text-2xl font-bold text-fg mb-8 text-center">管理登录</h1>
+      <div class="max-w-sm mx-auto pt-16 md:pt-24 page-enter">
+        <h1 class="font-serif text-2xl font-bold text-fg mb-2 text-center">管理登录</h1>
+        <p class="text-sm text-subtle text-center mb-8">输入管理员密码以继续</p>
         <form class="card p-6" @submit=${this._submit}>
+          <label class="block text-xs font-medium text-muted mb-2">密码</label>
           <input
-            type="password" name="password" placeholder="管理员密码"
-            class="input-field px-4 py-3 text-sm mb-4" required autofocus
+            type="password" name="password" placeholder="••••••••"
+            class="input-field px-3.5 py-2.5 text-sm mb-4" required autofocus
           />
           ${this.error ? html`<p class="text-red-500 text-sm mb-4">${this.error}</p>` : ''}
           <button
             type="submit" ?disabled=${this.loading}
-            class="btn-primary w-full py-3 text-sm text-white dark:text-black"
-          >${this.loading ? '...' : '登录'}</button>
+            class="btn-primary w-full py-2.5 text-sm"
+          >${this.loading ? '登录中...' : '登录'}</button>
         </form>
       </div>
     `;

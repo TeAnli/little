@@ -60,26 +60,24 @@ class CommentSection extends LitElement {
 
   render() {
     return html`
-      <h2 class="font-serif text-2xl font-semibold text-fg mb-6">
-        Comments
-        <span class="text-muted text-base font-sans font-normal">(${this.totalCount})</span>
+      <h2 class="font-serif text-xl font-bold text-fg mb-8 flex items-baseline gap-2">
+        评论
+        <span class="text-sm font-sans font-normal text-subtle">${this.totalCount}</span>
       </h2>
 
-      <comment-form
-        @submit=${this._onSubmit}
-      ></comment-form>
+      <comment-form @submit=${this._onSubmit}></comment-form>
 
-      <div class="mt-8 flex flex-col gap-4">
+      <div class="mt-10 flex flex-col gap-5">
         ${this.loading
           ? Array.from({ length: 3 }).map(() => html`
-              <div class="card p-5 animate-pulse">
-                <div class="h-4 bg-line rounded w-1/4 mb-3"></div>
-                <div class="h-4 bg-line rounded w-full mb-2"></div>
-                <div class="h-4 bg-line rounded w-2/3"></div>
+              <div class="animate-pulse">
+                <div class="h-3 bg-hairline rounded w-24 mb-3"></div>
+                <div class="h-4 bg-hairline rounded w-full mb-2"></div>
+                <div class="h-4 bg-hairline rounded w-2/3"></div>
               </div>
             `)
           : this.comments.length === 0
-            ? html`<div class="card p-8 text-center text-muted text-sm">还没有评论，来发表第一条吧</div>`
+            ? html`<div class="py-8 text-center text-sm text-subtle">还没有评论，来发表第一条吧</div>`
             : this.comments.map((c) => html`<comment-item .comment=${c}></comment-item>`)}
       </div>
 

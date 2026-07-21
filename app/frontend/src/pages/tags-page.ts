@@ -4,7 +4,7 @@ import { getTags } from '../api';
 import { navigate } from '../router/router';
 import type { Tag } from '../types';
 
-// 标签页 — 标签云，按文章数排序，大小按计数缩放
+// 标签页 — 精炼标签云，按文章数排序
 @customElement('tags-page')
 class TagsPage extends LitElement {
   @state() tags: Tag[] = [];
@@ -37,32 +37,31 @@ class TagsPage extends LitElement {
   render() {
     return html`
       <div class="page-enter">
-        <div class="mb-12">
-          <p class="text-xs font-medium text-muted uppercase tracking-widest mb-3">Tags</p>
+        <div class="mb-14">
           <h1 class="font-serif text-3xl md:text-4xl font-bold text-fg leading-tight">所有标签</h1>
-          <p class="text-muted mt-3 text-lg">按文章数量排序，点击筛选相关文章</p>
+          <p class="text-muted mt-3 text-base md:text-lg">按文章数量排序，点击筛选相关文章</p>
         </div>
 
         ${this.loading
-          ? html`<div class="flex flex-wrap gap-3 animate-pulse">
+          ? html`<div class="flex flex-wrap gap-2.5 animate-pulse">
               ${Array.from({ length: 8 }).map(
-                () => html`<div class="h-9 bg-line rounded-full" style="width: ${80 + Math.random() * 60}px"></div>`
+                () => html`<div class="h-8 bg-hairline rounded-full" style="width: ${70 + Math.random() * 60}px"></div>`
               )}
             </div>`
           : this.tags.length === 0
-            ? html`<div class="card p-12 text-center text-muted">还没有标签</div>`
-            : html`<div class="flex flex-wrap gap-3 items-center">
+            ? html`<div class="py-20 text-center"><p class="text-muted text-base">还没有标签</p></div>`
+            : html`<div class="flex flex-wrap gap-2.5 items-center">
                 ${this.tags.map((t) => {
                   const max = this.tags[0]?.count || 1;
-                  const fontSize = (0.875 + (t.count / max) * 0.75).toFixed(3);
+                  const fontSize = (0.875 + (t.count / max) * 0.5).toFixed(3);
                   return html`
                     <button
-                      class="tag-cloud-item badge inline-flex items-center gap-1.5 px-4 py-2 cursor-pointer"
+                      class="tag-cloud-item badge inline-flex items-center gap-1.5 px-3.5 py-1.5 cursor-pointer"
                       style="font-size: ${fontSize}rem"
                       @click=${() => this._goTag(t.name)}
                     >
                       <span class="font-medium">${t.name}</span>
-                      <span class="text-xs opacity-60">${t.count}</span>
+                      <span class="text-xs opacity-50">${t.count}</span>
                     </button>
                   `;
                 })}

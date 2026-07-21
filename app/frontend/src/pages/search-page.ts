@@ -48,13 +48,12 @@ class SearchPage extends LitElement {
     const hasQuery = this.q.trim().length > 0;
     return html`
       <div class="page-enter">
-        <div class="mb-10">
-          <p class="text-xs font-medium text-muted uppercase tracking-widest mb-3">Search</p>
+        <div class="mb-12">
           <h1 class="font-serif text-3xl md:text-4xl font-bold text-fg leading-tight">
-            ${hasQuery ? html`搜索 <span class="text-accent">"${this.q}"</span>` : '搜索'}
+            ${hasQuery ? html`搜索 “<span class="text-muted">${this.q}</span>”` : '搜索'}
           </h1>
           ${hasQuery && !this.loading
-            ? html`<p class="text-muted mt-3 text-lg">找到 ${this.total} 篇相关文章</p>`
+            ? html`<p class="text-muted mt-3 text-base">找到 ${this.total} 篇相关文章</p>`
             : nothing}
         </div>
 
@@ -66,25 +65,26 @@ class SearchPage extends LitElement {
   private _renderBody(hasQuery: boolean) {
     if (!hasQuery) {
       return html`
-        <div class="card p-12 text-center">
-          <div class="flex justify-center mb-4 text-muted opacity-60">${icons.search(32)}</div>
-          <p class="text-muted text-lg mb-2">输入关键词开始搜索</p>
-          <p class="text-sm text-muted">按 <kbd class="kbd">Cmd/Ctrl</kbd> + <kbd class="kbd">K</kbd> 快速唤起搜索框</p>
+        <div class="py-20 text-center">
+          <div class="flex justify-center mb-4 text-subtle">${icons.search(28)}</div>
+          <p class="text-muted text-base mb-1">输入关键词开始搜索</p>
+          <p class="text-sm text-subtle">按 <kbd class="font-mono text-xs px-1.5 py-0.5 rounded border hairline bg-surface">⌘K</kbd> 快速唤起搜索框</p>
         </div>
       `;
     }
 
     if (this.loading) {
       return html`
-        <div class="flex flex-col gap-5">
+        <div class="flex flex-col">
           ${Array.from({ length: 3 }).map(
             () => html`
-              <div class="card p-6 animate-pulse">
-                <div class="h-6 bg-line rounded w-3/4 mb-3"></div>
-                <div class="h-4 bg-line rounded w-1/4 mb-4"></div>
-                <div class="h-4 bg-line rounded w-full mb-2"></div>
-                <div class="h-4 bg-line rounded w-2/3"></div>
+              <div class="py-7">
+                <div class="shimmer h-3 rounded w-32 mb-3"></div>
+                <div class="shimmer h-6 rounded w-3/4 mb-3"></div>
+                <div class="shimmer h-4 rounded w-full mb-1.5"></div>
+                <div class="shimmer h-4 rounded w-2/3"></div>
               </div>
+              <div class="border-t hairline"></div>
             `
           )}
         </div>
@@ -93,12 +93,12 @@ class SearchPage extends LitElement {
 
     if (this.results.length === 0) {
       return html`
-        <div class="card p-12 text-center">
-          <div class="flex justify-center mb-4 text-muted opacity-60">${icons.search(32)}</div>
-          <p class="text-muted text-lg mb-2">没有找到相关文章</p>
-          <p class="text-sm text-muted mb-6">换个关键词试试吧</p>
+        <div class="py-20 text-center">
+          <div class="flex justify-center mb-4 text-subtle">${icons.search(28)}</div>
+          <p class="text-muted text-base mb-1">没有找到相关文章</p>
+          <p class="text-sm text-subtle mb-6">换个关键词试试吧</p>
           <button
-            class="btn-ghost px-4 py-2 rounded-xl text-sm text-fg cursor-pointer"
+            class="btn-ghost px-4 py-2 rounded-[var(--radius-btn)] text-sm text-fg cursor-pointer"
             @click=${() => navigate('/')}
           >
             返回首页
@@ -108,8 +108,11 @@ class SearchPage extends LitElement {
     }
 
     return html`
-      <div class="flex flex-col gap-5">
-        ${this.results.map((p, i) => html`<post-card .post=${p} .index=${i} .highlight=${this.q}></post-card>`)}
+      <div class="flex flex-col">
+        ${this.results.map((p, i) => html`
+          ${i > 0 ? html`<div class="border-t hairline"></div>` : nothing}
+          <post-card .post=${p} .index=${i} .highlight=${this.q}></post-card>
+        `)}
       </div>
     `;
   }

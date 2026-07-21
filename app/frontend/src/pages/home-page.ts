@@ -56,14 +56,30 @@ class HomePage extends LitElement {
   render() {
     return html`
       <div class="page-enter">
-        <div class="mb-12">
-          <p class="text-xs font-medium text-muted uppercase tracking-widest mb-3">Blog</p>
-          <h1 class="font-serif text-3xl md:text-4xl font-bold text-fg leading-tight">
-            ${this.tag ? `#${this.tag}` : '思考与记录'}
-          </h1>
-          <p class="text-muted mt-3 text-lg">
-            ${this.tag ? `标签为 ${this.tag} 的文章` : '关于 Web 开发、工程实践与阅读笔记'}
-          </p>
+        <!-- 精炼 hero：无 uppercase 标签，更大的呼吸 -->
+        <div class="mb-14 md:mb-16">
+          ${this.tag
+            ? html`
+                <nav class="text-sm text-subtle mb-3">
+                  <a href="#/" class="hover:text-fg transition-colors cursor-pointer" @click=${() => navigate('/')}>Home</a>
+                  <span class="mx-1.5">/</span>
+                  <span class="text-muted">Tag</span>
+                </nav>
+                <h1 class="font-serif text-3xl md:text-4xl font-bold text-fg leading-tight">
+                  #${this.tag}
+                </h1>
+                <p class="text-muted mt-3 text-base">
+                  ${this.total} 篇相关文章
+                </p>
+              `
+            : html`
+                <h1 class="font-serif text-3xl md:text-4xl font-bold text-fg leading-tight">
+                  思考与记录
+                </h1>
+                <p class="text-muted mt-3 text-base md:text-lg">
+                  关于 Web 开发、工程实践与阅读笔记
+                </p>
+              `}
         </div>
 
         <post-list
