@@ -12,6 +12,7 @@ class AdminPage extends LitElement {
   @state() loading = true;
   @state() page = 1;
   @state() total = 0;
+  @state() confirmSlug = '';
   readonly size = 20;
 
   createRenderRoot() { return this; }
@@ -24,21 +25,16 @@ class AdminPage extends LitElement {
 
   private async _load() {
     this.loading = true;
-    try {
-      const res = await getPosts(this.page, this.size);
-      this.posts = res.posts;
-      this.total = res.total;
-    } catch { this.posts = []; }
+    try { const res = await getPosts(this.page, this.size); this.posts = res.posts; this.total = res.total; }
+    catch { this.posts = []; }
     this.loading = false;
   }
 
-  private _go(p: number) {
-    this.page = p;
-    this._load();
-  }
+  private _go(p: number) { this.page = p; this._load(); }
 
-  private async _delete(slug: string) {
-    if (!confirm('删除这篇文章？')) return;
+  private async _confirmDelete() {
+    const slug = this.confirmSlug;
+    this.confirmSlug = '';
     await deletePost(slug);
     this._load();
   }
@@ -72,7 +68,7 @@ class AdminPage extends LitElement {
                   <button class="btn-ghost px-3 py-1.5 text-xs text-fg rounded-lg cursor-pointer"
                     @click=${() => navigate('/editor/' + p.slug)}>编辑</button>
                   <button class="btn-ghost px-3 py-1.5 text-xs text-red-500 rounded-lg cursor-pointer"
-                    @click=${() => this._delete(p.slug)}>删除</button>
+                    @click=${() => this.confirmSlug = p.slug}>删除</button>
                 </div>
               </div>
             `)}
@@ -84,6 +80,20 @@ class AdminPage extends LitElement {
             <button class="btn-ghost px-3 py-1.5 text-sm text-muted rounded-lg cursor-pointer" ?disabled=${this.page <= 1} @click=${() => this._go(this.page - 1)}>← 上一页</button>
             <span class="text-sm text-muted">${this.page} / ${this._pages}</span>
             <button class="btn-ghost px-3 py-1.5 text-sm text-muted rounded-lg cursor-pointer" ?disabled=${this.page >= this._pages} @click=${() => this._go(this.page + 1)}>下一页 →</button>
+          </div>
+        ` : nothing}
+
+        ${this.confirmSlug ? html`
+          <div class="fixed inset-0 z-50 flex items-center justify-center" @click=${(e: Event) => { if (e.target === e.currentTarget) this.confirmSlug = ''; }}>
+            <div class="drawer-overlay absolute inset-0"></div>
+            <div class="card p-6 max-w-sm w-full mx-4 modal-enter relative z-10">
+              <p class="text-fg font-medium mb-2">确认删除</p>
+              <p class="text-sm text-muted mb-6">此操作不可撤销</p>
+              <div class="flex justify-end gap-3">
+                <button class="btn-ghost px-4 py-2 text-sm text-muted rounded-lg cursor-pointer" @click=${() => this.confirmSlug = ''}>取消</button>
+                <button class="px-4 py-2 text-sm text-white rounded-lg cursor-pointer" style="background:rgb(var(--c-accent))" @click=${this._confirmDelete}>删除</button>
+              </div>
+            </div>
           </div>
         ` : nothing}
       </div>
