@@ -1,11 +1,13 @@
 package service
 
 import (
-	"little-blog/backend/internal/model"
-	"little-blog/backend/internal/repository"
+	"errors"
 	"slices"
 	"strings"
 	"time"
+
+	"little-blog/backend/internal/model"
+	"little-blog/backend/internal/repository"
 )
 
 type PostService struct{ repo *repository.PostRepo }
@@ -65,10 +67,14 @@ func (s *PostService) Tags() []model.Tag {
 }
 
 func (s *PostService) Create(p model.CreatePostPayload) (*model.Post, error) {
-	slug := slugify(p.Title)
-	date := time.Now().Format("2006-01-02")
+	if err := validatePost(p.Title, p.Content); err != nil {
+		return nil, err
+	}
+
+	slug := repository.Slugify(p.Title)
 	post := &model.Post{
-		Slug: slug, Title: p.Title, Date: date,
+		Slug: slug, Title: p.Title,
+		Date: time.Now().Format("2006-01-02"),
 		Tags: p.Tags, Summary: p.Summary, Content: p.Content,
 	}
 	if err := s.repo.Create(post); err != nil {
@@ -78,6 +84,10 @@ func (s *PostService) Create(p model.CreatePostPayload) (*model.Post, error) {
 }
 
 func (s *PostService) Update(slug string, p model.UpdatePostPayload) (*model.Post, error) {
+	if err := validatePost(p.Title, p.Content); err != nil {
+		return nil, err
+	}
+
 	date := p.Date
 	if date == "" {
 		date = time.Now().Format("2006-01-02")
@@ -96,10 +106,17 @@ func (s *PostService) Delete(slug string) error {
 	return s.repo.Delete(slug)
 }
 
-func slugify(s string) string {
-	s = strings.ToLower(s)
-	s = strings.ReplaceAll(s, " ", "-")
-	return s
+func validatePost(title, content string) error {
+	if len(strings.TrimSpace(title)) == 0 {
+		return errors.New("title is required")
+	}
+	if len(title) > 200 {
+		return errors.New("title too long")
+	}
+	if len(strings.TrimSpace(content)) == 0 {
+		return errors.New("content is required")
+	}
+	return nil
 }
 
 func contains(tags []string, tag string) bool {

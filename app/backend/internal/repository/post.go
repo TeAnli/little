@@ -1,176 +1,80 @@
 package repository
 
 import (
-	"os"
-	"path/filepath"
+	"context"
+	"database/sql"
+	"encoding/json"
+	"fmt"
 	"sort"
 	"strings"
 	"sync"
 
 	"little-blog/backend/internal/model"
-
-	"gopkg.in/yaml.v3"
 )
 
 type PostRepo struct {
-	mu         sync.RWMutex
-	posts      map[string]*model.Post
-	sorted     []*model.Post
-	contentDir string
+	mu  sync.RWMutex
+	db  *sql.DB
+	all []*model.Post
 }
 
-func NewPostRepo(contentDir string) (*PostRepo, error) {
-	r := &PostRepo{posts: make(map[string]*model.Post), contentDir: contentDir}
-	return r, r.load(contentDir)
+func NewPostRepo(db *sql.DB) (*PostRepo, error) {
+	r := &PostRepo{db: db}
+	if err := r.refresh(); err != nil {
+		return nil, err
+	}
+	return r, nil
 }
 
-func (r *PostRepo) load(dir string) error {
-	entries, err := os.ReadDir(filepath.Join(dir, "posts"))
+func (r *PostRepo) refresh() error {
+	rows, err := r.db.QueryContext(context.Background(),
+		`SELECT slug, title, date, tags, summary, content FROM posts ORDER BY date DESC`)
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 
 	var all []*model.Post
-	for _, e := range entries {
-		if !strings.HasSuffix(e.Name(), ".md") {
-			continue
+	for rows.Next() {
+		var p model.Post
+		var tagsJSON []byte
+		if err := rows.Scan(&p.Slug, &p.Title, &p.Date, &tagsJSON, &p.Summary, &p.Content); err != nil {
+			return err
 		}
-		p, err := parsePost(filepath.Join(dir, "posts", e.Name()))
-		if err != nil {
-			continue
-		}
-		all = append(all, p)
+		json.Unmarshal(tagsJSON, &p.Tags)
+		all = append(all, &p)
 	}
-
-	sort.Slice(all, func(i, j int) bool { return all[i].Date > all[j].Date })
 
 	r.mu.Lock()
-	for _, p := range all {
-		r.posts[p.Slug] = p
-	}
-	r.sorted = all
+	r.all = all
 	r.mu.Unlock()
 	return nil
-}
-
-type frontMatter struct {
-	Title   string   `yaml:"title"`
-	Date    string   `yaml:"date"`
-	Tags    []string `yaml:"tags"`
-	Slug    string   `yaml:"slug"`
-	Summary string   `yaml:"summary"`
-}
-
-func parsePost(path string) (*model.Post, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-
-	text := string(data)
-	fm, body, _ := splitFM(text)
-
-	var m frontMatter
-	yaml.Unmarshal([]byte(fm), &m)
-
-	if m.Slug == "" {
-		base := filepath.Base(path)
-		m.Slug = strings.TrimSuffix(base, ".md")
-	}
-
-	return &model.Post{
-		Slug:    m.Slug,
-		Title:   m.Title,
-		Date:    m.Date,
-		Tags:    m.Tags,
-		Summary: m.Summary,
-		Content: strings.TrimSpace(body),
-	}, nil
-}
-
-func splitFM(text string) (string, string, error) {
-	text = strings.TrimSpace(text)
-	if !strings.HasPrefix(text, "---") {
-		return "", text, nil
-	}
-	rest := text[3:]
-	idx := strings.Index(rest, "---")
-	if idx == -1 {
-		return "", text, nil
-	}
-	return rest[:idx], rest[idx+3:], nil
 }
 
 func (r *PostRepo) All() []*model.Post {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	out := make([]*model.Post, len(r.sorted))
-	copy(out, r.sorted)
+	out := make([]*model.Post, len(r.all))
+	copy(out, r.all)
 	return out
 }
 
 func (r *PostRepo) BySlug(slug string) (*model.Post, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	p, ok := r.posts[slug]
-	return p, ok
-}
-
-func (r *PostRepo) dir() string {
-	return r.contentDir
-}
-
-func (r *PostRepo) Create(p *model.Post) error {
-	dir := filepath.Join(r.contentDir, "posts")
-	os.MkdirAll(dir, 0755)
-	return writePost(dir, p)
-}
-
-func (r *PostRepo) Update(slug string, p *model.Post) error {
-	dir := filepath.Join(r.contentDir, "posts")
-	if _, ok := r.posts[slug]; !ok {
-		return os.ErrNotExist
-	}
-	return writePost(dir, p)
-}
-
-func (r *PostRepo) Delete(slug string) error {
-	if _, ok := r.posts[slug]; !ok {
-		return os.ErrNotExist
-	}
-	filePath := filepath.Join(r.contentDir, "posts", slug+".md")
-	if err := os.Remove(filePath); err != nil {
-		return err
-	}
-	r.mu.Lock()
-	delete(r.posts, slug)
-	for i, p := range r.sorted {
+	for _, p := range r.all {
 		if p.Slug == slug {
-			r.sorted = append(r.sorted[:i], r.sorted[i+1:]...)
-			break
+			return p, true
 		}
 	}
-	r.mu.Unlock()
-	return nil
-}
-
-func writePost(dir string, p *model.Post) error {
-	tagsJSON, _ := yaml.Marshal(p.Tags)
-	content := "---\n" +
-		"title: \"" + p.Title + "\"\n" +
-		"date: \"" + p.Date + "\"\n" +
-		"tags: " + strings.TrimSpace(string(tagsJSON)) + "\n" +
-		"slug: \"" + p.Slug + "\"\n" +
-		"summary: \"" + p.Summary + "\"\n" +
-		"---\n\n" + p.Content
-	return os.WriteFile(filepath.Join(dir, p.Slug+".md"), []byte(content), 0644)
+	return nil, false
 }
 
 func (r *PostRepo) Tags() []model.Tag {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	m := make(map[string]int)
-	for _, p := range r.sorted {
+	for _, p := range r.all {
 		for _, t := range p.Tags {
 			m[t]++
 		}
@@ -181,4 +85,51 @@ func (r *PostRepo) Tags() []model.Tag {
 	}
 	sort.Slice(tags, func(i, j int) bool { return tags[i].Count > tags[j].Count })
 	return tags
+}
+
+func (r *PostRepo) Create(p *model.Post) error {
+	tagsJSON, _ := json.Marshal(p.Tags)
+	_, err := r.db.ExecContext(context.Background(),
+		`INSERT INTO posts (slug, title, date, tags, summary, content) VALUES ($1,$2,$3,$4,$5,$6)`,
+		p.Slug, p.Title, p.Date, tagsJSON, p.Summary, p.Content)
+	if err != nil {
+		return err
+	}
+	return r.refresh()
+}
+
+func (r *PostRepo) Update(slug string, p *model.Post) error {
+	tagsJSON, _ := json.Marshal(p.Tags)
+	_, err := r.db.ExecContext(context.Background(),
+		`UPDATE posts SET title=$1, date=$2, tags=$3, summary=$4, content=$5 WHERE slug=$6`,
+		p.Title, p.Date, tagsJSON, p.Summary, p.Content, slug)
+	if err != nil {
+		return err
+	}
+	return r.refresh()
+}
+
+func (r *PostRepo) Delete(slug string) error {
+	_, err := r.db.ExecContext(context.Background(), `DELETE FROM posts WHERE slug=$1`, slug)
+	if err != nil {
+		return err
+	}
+	return r.refresh()
+}
+
+func Slugify(title string) string {
+	s := strings.ToLower(title)
+	var b strings.Builder
+	for _, r := range s {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') || r == '-' {
+			b.WriteRune(r)
+		} else if r == ' ' || r == '_' {
+			b.WriteRune('-')
+		}
+	}
+	result := strings.Trim(b.String(), "-")
+	if result == "" {
+		result = fmt.Sprintf("post-%d", 0)
+	}
+	return result
 }
