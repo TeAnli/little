@@ -1,7 +1,7 @@
 import { LitElement, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { getPost, createPost, updatePost } from '../api';
-import { isLoggedIn } from '../services/auth';
+import { isLoggedIn, verifyToken } from '../services/auth';
 import { navigate } from '../router/router';
 import type { Post } from '../types';
 
@@ -19,9 +19,9 @@ class EditorPage extends LitElement {
 
   createRenderRoot() { return this; }
 
-  connectedCallback() {
+  async connectedCallback() {
     super.connectedCallback();
-    if (!isLoggedIn()) { navigate('/login'); return; }
+    if (!isLoggedIn() || !(await verifyToken())) { navigate('/login'); return; }
   }
 
   willUpdate(changed: Map<string, unknown>) {

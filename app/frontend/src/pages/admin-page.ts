@@ -1,7 +1,7 @@
 import { LitElement, html, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { getPosts, deletePost } from '../api';
-import { isLoggedIn, logout } from '../services/auth';
+import { isLoggedIn, logout, verifyToken } from '../services/auth';
 import { navigate } from '../router/router';
 import { formatDate } from '../utils/time';
 import type { Post } from '../types';
@@ -16,9 +16,9 @@ class AdminPage extends LitElement {
 
   createRenderRoot() { return this; }
 
-  connectedCallback() {
+  async connectedCallback() {
     super.connectedCallback();
-    if (!isLoggedIn()) { navigate('/login'); return; }
+    if (!isLoggedIn() || !(await verifyToken())) { navigate('/login'); return; }
     this._load();
   }
 

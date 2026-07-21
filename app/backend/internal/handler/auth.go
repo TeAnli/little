@@ -96,7 +96,10 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	token := make([]byte, 32)
-	rand.Read(token)
+	if _, err := rand.Read(token); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "server error"})
+		return
+	}
 	tokenStr := hex.EncodeToString(token)
 
 	h.mu.Lock()
