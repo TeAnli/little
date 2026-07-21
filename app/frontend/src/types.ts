@@ -44,6 +44,14 @@ export interface CreatePostPayload {
   summary: string;
 }
 
+export interface UpdatePostPayload {
+  title: string;
+  content: string;
+  tags: string[];
+  summary: string;
+  date: string;
+}
+
 export interface CommentPayload {
   parent_id: number | null;
   username: string;

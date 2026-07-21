@@ -1,6 +1,6 @@
-import type { Post, PostListResponse, CreatePostPayload } from '../types';
+import type { Post, PostListResponse, CreatePostPayload, UpdatePostPayload } from '../types';
 import { endpoints } from './url';
-import { request, post, del } from './client';
+import { request, post, put, del } from './client';
 
 /**
  * 获取分页文章列表。
@@ -41,6 +41,10 @@ export async function createPost(payload: CreatePostPayload): Promise<Post> {
  *
  * @param slug - 文章唯一标识
  */
+export async function updatePost(slug: string, payload: UpdatePostPayload): Promise<Post> {
+  return put<Post>(endpoints.posts.detail(slug), payload);
+}
+
 export async function deletePost(slug: string): Promise<void> {
   return del(endpoints.posts.detail(slug));
 }

@@ -1,6 +1,7 @@
 import { LitElement, html, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { navigate, parseHash } from '../router/router';
+import { isLoggedIn } from '../services/auth';
 import { icons } from '../utils/icons';
 
 // 导航栏 — 毛玻璃 + HeroUI 无边框 + 移动端 Drawer
@@ -52,14 +53,9 @@ class AppHeader extends LitElement {
 
             <!-- 桌面导航 -->
             <nav class="hidden md:flex items-center gap-1">
-              <a
-                href="#/"
-                class="btn-ghost px-3 py-2 text-sm font-medium rounded-lg ${this._isActive('/') ? 'text-fg' : 'text-muted'}"
-              >Home</a>
-              <a
-                href="#/tags"
-                class="btn-ghost px-3 py-2 text-sm font-medium rounded-lg ${this._isActive('/tags') ? 'text-fg' : 'text-muted'}"
-              >Tags</a>
+              <a href="#/" class="btn-ghost px-3 py-2 text-sm font-medium rounded-lg ${this._isActive('/') ? 'text-fg' : 'text-muted'}">Home</a>
+              <a href="#/tags" class="btn-ghost px-3 py-2 text-sm font-medium rounded-lg ${this._isActive('/tags') ? 'text-fg' : 'text-muted'}">Tags</a>
+              ${isLoggedIn() ? html`<a href="#/admin" class="btn-ghost px-3 py-2 text-sm font-medium rounded-lg text-muted">Admin</a>` : nothing}
             </nav>
 
             <!-- 右侧操作区 -->
@@ -98,16 +94,9 @@ class AppHeader extends LitElement {
                   </button>
                 </div>
                 <nav class="flex flex-col gap-1">
-                  <a
-                    href="#/"
-                    class="btn-ghost px-4 py-3 rounded-xl text-fg font-medium ${this._isActive('/') ? '' : 'text-muted'}"
-                    @click=${this._closeDrawer}
-                  >Home</a>
-                  <a
-                    href="#/tags"
-                    class="btn-ghost px-4 py-3 rounded-xl font-medium ${this._isActive('/tags') ? 'text-fg' : 'text-muted'}"
-                    @click=${this._closeDrawer}
-                  >Tags</a>
+                  <a href="#/" class="btn-ghost px-4 py-3 rounded-xl text-fg font-medium ${this._isActive('/') ? '' : 'text-muted'}" @click=${this._closeDrawer}>Home</a>
+                  <a href="#/tags" class="btn-ghost px-4 py-3 rounded-xl font-medium ${this._isActive('/tags') ? 'text-fg' : 'text-muted'}" @click=${this._closeDrawer}>Tags</a>
+                  ${isLoggedIn() ? html`<a href="#/admin" class="btn-ghost px-4 py-3 rounded-xl font-medium text-muted" @click=${this._closeDrawer}>Admin</a>` : nothing}
                 </nav>
               </div>
             </div>

@@ -12,6 +12,17 @@ const http = axios.create({
 });
 
 /**
+ * 请求拦截器：自动附加 Authorization token
+ */
+http.interceptors.request.use((config) => {
+  const token = localStorage.getItem('little-blog-token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+/**
  * 响应拦截器：统一错误处理
  * - 成功响应直接透传
  * - 失败时尝试从服务端响应的 error 字段提取错误信息，若不存在则使用 Axios 错误消息
@@ -56,6 +67,11 @@ export async function post<T>(url: string, body?: unknown): Promise<T> {
  * @param url - 请求路径（相对于 baseURL）
  * @returns 响应数据
  */
+export async function put<T>(url: string, body?: unknown): Promise<T> {
+  const res = await http.put<T>(url, body);
+  return res.data;
+}
+
 export async function del<T>(url: string): Promise<T> {
   const res = await http.delete<T>(url);
   return res.data;

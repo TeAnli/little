@@ -22,6 +22,9 @@ import './pages/home-page';
 import './pages/post-page';
 import './pages/tags-page';
 import './pages/search-page';
+import './pages/login-page';
+import './pages/admin-page';
+import './pages/editor-page';
 
 @customElement('blog-app')
 class BlogApp extends LitElement {
