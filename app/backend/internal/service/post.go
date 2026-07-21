@@ -3,6 +3,9 @@ package service
 import (
 	"little-blog/backend/internal/model"
 	"little-blog/backend/internal/repository"
+	"slices"
+	"strings"
+	"time"
 )
 
 type PostService struct{ repo *repository.PostRepo }
@@ -61,11 +64,44 @@ func (s *PostService) Tags() []model.Tag {
 	return s.repo.Tags()
 }
 
-func contains(tags []string, tag string) bool {
-	for _, t := range tags {
-		if t == tag {
-			return true
-		}
+func (s *PostService) Create(p model.CreatePostPayload) (*model.Post, error) {
+	slug := slugify(p.Title)
+	date := time.Now().Format("2006-01-02")
+	post := &model.Post{
+		Slug: slug, Title: p.Title, Date: date,
+		Tags: p.Tags, Summary: p.Summary, Content: p.Content,
 	}
-	return false
+	if err := s.repo.Create(post); err != nil {
+		return nil, err
+	}
+	return post, nil
+}
+
+func (s *PostService) Update(slug string, p model.UpdatePostPayload) (*model.Post, error) {
+	date := p.Date
+	if date == "" {
+		date = time.Now().Format("2006-01-02")
+	}
+	post := &model.Post{
+		Slug: slug, Title: p.Title, Date: date,
+		Tags: p.Tags, Summary: p.Summary, Content: p.Content,
+	}
+	if err := s.repo.Update(slug, post); err != nil {
+		return nil, err
+	}
+	return post, nil
+}
+
+func (s *PostService) Delete(slug string) error {
+	return s.repo.Delete(slug)
+}
+
+func slugify(s string) string {
+	s = strings.ToLower(s)
+	s = strings.ReplaceAll(s, " ", "-")
+	return s
+}
+
+func contains(tags []string, tag string) bool {
+	return slices.Contains(tags, tag)
 }

@@ -13,13 +13,14 @@ import (
 )
 
 type PostRepo struct {
-	mu     sync.RWMutex
-	posts  map[string]*model.Post
-	sorted []*model.Post
+	mu         sync.RWMutex
+	posts      map[string]*model.Post
+	sorted     []*model.Post
+	contentDir string
 }
 
 func NewPostRepo(contentDir string) (*PostRepo, error) {
-	r := &PostRepo{posts: make(map[string]*model.Post)}
+	r := &PostRepo{posts: make(map[string]*model.Post), contentDir: contentDir}
 	return r, r.load(contentDir)
 }
 
@@ -113,6 +114,56 @@ func (r *PostRepo) BySlug(slug string) (*model.Post, bool) {
 	defer r.mu.RUnlock()
 	p, ok := r.posts[slug]
 	return p, ok
+}
+
+func (r *PostRepo) dir() string {
+	return r.contentDir
+}
+
+func (r *PostRepo) Create(p *model.Post) error {
+	dir := filepath.Join(r.contentDir, "posts")
+	os.MkdirAll(dir, 0755)
+	return writePost(dir, p)
+}
+
+func (r *PostRepo) Update(slug string, p *model.Post) error {
+	dir := filepath.Join(r.contentDir, "posts")
+	if _, ok := r.posts[slug]; !ok {
+		return os.ErrNotExist
+	}
+	return writePost(dir, p)
+}
+
+func (r *PostRepo) Delete(slug string) error {
+	if _, ok := r.posts[slug]; !ok {
+		return os.ErrNotExist
+	}
+	filePath := filepath.Join(r.contentDir, "posts", slug+".md")
+	if err := os.Remove(filePath); err != nil {
+		return err
+	}
+	r.mu.Lock()
+	delete(r.posts, slug)
+	for i, p := range r.sorted {
+		if p.Slug == slug {
+			r.sorted = append(r.sorted[:i], r.sorted[i+1:]...)
+			break
+		}
+	}
+	r.mu.Unlock()
+	return nil
+}
+
+func writePost(dir string, p *model.Post) error {
+	tagsJSON, _ := yaml.Marshal(p.Tags)
+	content := "---\n" +
+		"title: \"" + p.Title + "\"\n" +
+		"date: \"" + p.Date + "\"\n" +
+		"tags: " + strings.TrimSpace(string(tagsJSON)) + "\n" +
+		"slug: \"" + p.Slug + "\"\n" +
+		"summary: \"" + p.Summary + "\"\n" +
+		"---\n\n" + p.Content
+	return os.WriteFile(filepath.Join(dir, p.Slug+".md"), []byte(content), 0644)
 }
 
 func (r *PostRepo) Tags() []model.Tag {

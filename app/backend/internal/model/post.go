@@ -20,3 +20,18 @@ type Tag struct {
 	Name  string `json:"name"`
 	Count int    `json:"count"`
 }
+
+type CreatePostPayload struct {
+	Title   string   `json:"title"`
+	Content string   `json:"content"`
+	Tags    []string `json:"tags"`
+	Summary string   `json:"summary"`
+}
+
+type UpdatePostPayload struct {
+	Title   string   `json:"title"`
+	Content string   `json:"content"`
+	Tags    []string `json:"tags"`
+	Summary string   `json:"summary"`
+	Date    string   `json:"date"`
+}
