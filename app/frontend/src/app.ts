@@ -2,6 +2,7 @@ import { LitElement, html, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { parseHash, onRouteChange, navigate, type ParsedRoute } from './router/router';
 import './router/routes';
+import { icons } from './utils/icons';
 import { initTheme } from './utils/theme';
 
 // 注册全部组件（副作用导入，触发 customElements.define）
@@ -29,10 +30,10 @@ import './pages/editor-page';
 @customElement('blog-app')
 class BlogApp extends LitElement {
   @state() route: ParsedRoute = parseHash();
+  @state() scrollProgress = 0;
+  @state() showBackTop = false;
 
-  createRenderRoot() {
-    return this;
-  }
+  createRenderRoot() { return this; }
 
   connectedCallback() {
     super.connectedCallback();
@@ -41,8 +42,19 @@ class BlogApp extends LitElement {
       this.route = r;
       window.scrollTo({ top: 0, behavior: 'auto' });
     });
-    // Cmd/Ctrl + K 由 <search-bar> 自身监听处理，无需在此重复绑定
+    window.addEventListener('scroll', this._onScroll);
   }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.removeEventListener('scroll', this._onScroll);
+  }
+
+  private _onScroll = () => {
+    const h = document.documentElement.scrollHeight - window.innerHeight;
+    this.scrollProgress = h > 0 ? Math.min(window.scrollY / h, 1) : 0;
+    this.showBackTop = window.scrollY > 500;
+  };
 
   private _renderPage() {
     const { params, query, render } = this.route;
@@ -55,6 +67,11 @@ class BlogApp extends LitElement {
     const routeKey = `${page}:${params.slug || params.tag || query.q || ''}`;
 
     return html`
+      <div class="reading-progress" style="transform:scaleX(${this.scrollProgress})"></div>
+      ${this.showBackTop ? html`
+        <button class="back-to-top" @click=${() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          aria-label="返回顶部">${icons.arrowUp(16)}</button>
+      ` : nothing}
       <div class="min-h-dvh flex flex-col">
         <app-header></app-header>
 

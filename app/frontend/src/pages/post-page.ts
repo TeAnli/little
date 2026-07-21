@@ -6,6 +6,12 @@ import { icons } from '../utils/icons';
 import { formatDate } from '../utils/time';
 import type { Post } from '../types';
 
+function readTime(content: string): string {
+  const words = content.trim().split(/\s+/).length;
+  const mins = Math.max(1, Math.ceil(words / 200));
+  return `~${mins} min read`;
+}
+
 // 文章详情页 — 精炼头部 + Markdown 正文 + 评论区
 @customElement('post-page')
 class PostPage extends LitElement {
@@ -86,6 +92,8 @@ class PostPage extends LitElement {
                 ${icons.clock(13)}
                 <time class="font-mono text-xs">${formatDate(p.date)}</time>
               </span>
+              <span>·</span>
+              <span class="text-subtle text-xs">${readTime(p.content || '')}</span>
               ${p.tags.length > 0
                 ? html`<span>·</span>
                     <div class="flex gap-2">

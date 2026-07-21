@@ -37,4 +37,5 @@ export const icons = {
   arrowRight: (size?: number) => wrap(mdi('arrow-right'), size),
   caretLeft: (size?: number) => wrap(mdi('chevron-left'), size),
   caretRight: (size?: number) => wrap(mdi('chevron-right'), size),
+  arrowUp: (size?: number) => wrap(mdi('arrow-up'), size),
 };

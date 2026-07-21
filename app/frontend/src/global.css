@@ -340,6 +340,41 @@ body::before {
     border-color: rgb(var(--c-hairline));
   }
 
+  /* 阅读进度条 */
+  .reading-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    z-index: 100;
+    background: rgb(var(--c-fg));
+    transform-origin: left;
+    will-change: transform;
+  }
+
+  /* 返回顶部按钮 */
+  .back-to-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 50;
+    padding: 0.625rem;
+    border-radius: 9999px;
+    background: rgb(var(--c-surface));
+    border: 1px solid rgb(var(--c-border));
+    color: rgb(var(--c-muted));
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    animation: fadeIn 0.3s var(--ease-out);
+    transition: color 0.2s, border-color 0.2s, transform 0.2s;
+  }
+  .back-to-top:hover {
+    color: rgb(var(--c-fg));
+    border-color: rgb(var(--c-fg) / 0.3);
+    transform: translateY(-2px);
+  }
+
   /* 渐显工具类 — 通用淡入 */
   .fade-in {
     animation: fadeIn 0.4s var(--ease-out);
