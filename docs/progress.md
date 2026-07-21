@@ -8,6 +8,7 @@
 
 | 日期 | 更新 |
 |------|------|
+| 2026-07-21 | Token 过期机制（24h）+ 内存定期清理 + Verify 端点 + 评论回显脱敏 |
 | 2026-07-21 | XSS 防护：marked + DOMPurify sanitize，禁止脚本注入 |
 | 2026-07-21 | 前端管理界面：登录页（RSA 加密）、后台（列表/删除）、编辑器（新增/编辑 Markdown） |
 | 2026-07-20 | 容器配置更新：ADMIN_PASSWORD 环境变量、移除 CONTENT_DIR、精简 Dockerfile |

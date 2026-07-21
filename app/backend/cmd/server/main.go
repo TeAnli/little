@@ -40,6 +40,7 @@ func main() {
 
 		api.GET("/auth/public-key", authH.PublicKey)
 		api.POST("/auth/login", authH.Login)
+		api.GET("/auth/verify", authH.Verify)
 
 		api.GET("/posts", postH.List)
 		api.GET("/posts/:slug", postH.Get)

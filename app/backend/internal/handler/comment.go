@@ -20,7 +20,21 @@ type CommentHandler struct {
 }
 
 func NewCommentHandler(repo *repository.CommentRepo) *CommentHandler {
-	return &CommentHandler{repo: repo, rateMap: make(map[string]time.Time)}
+	h := &CommentHandler{repo: repo, rateMap: make(map[string]time.Time)}
+	go func() {
+		for {
+			time.Sleep(10 * time.Minute)
+			h.rateMu.Lock()
+			now := time.Now()
+			for k, v := range h.rateMap {
+				if now.Sub(v) > 30*time.Minute {
+					delete(h.rateMap, k)
+				}
+			}
+			h.rateMu.Unlock()
+		}
+	}()
+	return h
 }
 
 var emailRegex = regexp.MustCompile(`^[^@\s]+@[^@\s]+\.[^@\s]+$`)
@@ -80,6 +94,7 @@ func (h *CommentHandler) Create(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create comment"})
 		return
 	}
+	comment.Email = mask(comment.Email)
 	c.JSON(http.StatusCreated, comment)
 }
 

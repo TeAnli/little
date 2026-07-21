@@ -11,16 +11,24 @@ import (
 	"net/http"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
+type tokenEntry struct {
+	createdAt time.Time
+}
+
 type AuthHandler struct {
 	privateKey *rsa.PrivateKey
 	publicKey  []byte
-	tokens     map[string]bool // valid tokens
+	tokens     map[string]tokenEntry
 	mu         sync.RWMutex
 }
+
+const tokenTTL = 24 * time.Hour
+const cleanupInterval = 1 * time.Hour
 
 func NewAuthHandler() *AuthHandler {
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -29,10 +37,27 @@ func NewAuthHandler() *AuthHandler {
 	}
 	pubDER, _ := x509.MarshalPKIXPublicKey(&key.PublicKey)
 	pubPEM := pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: pubDER})
-	return &AuthHandler{privateKey: key, publicKey: pubPEM, tokens: make(map[string]bool)}
+	h := &AuthHandler{privateKey: key, publicKey: pubPEM, tokens: make(map[string]tokenEntry)}
+	go h.cleanupLoop()
+	return h
+}
+
+func (h *AuthHandler) cleanupLoop() {
+	for {
+		time.Sleep(cleanupInterval)
+		h.mu.Lock()
+		now := time.Now()
+		for k, v := range h.tokens {
+			if now.Sub(v.createdAt) > tokenTTL {
+				delete(h.tokens, k)
+			}
+		}
+		h.mu.Unlock()
+	}
 }
 
 func (h *AuthHandler) PublicKey(c *gin.Context) {
+	c.Header("Cache-Control", "public, max-age=3600")
 	c.JSON(http.StatusOK, gin.H{"public_key": string(h.publicKey)})
 }
 
@@ -49,24 +74,24 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	encrypted, err := base64.StdEncoding.DecodeString(req.Password)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid encoding"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 
 	plain, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, h.privateKey, encrypted, nil)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "wrong password"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
 
 	pass := os.Getenv("ADMIN_PASSWORD")
 	if pass == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "server not configured"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
 
 	if string(plain) != pass {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "wrong password"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
 
@@ -75,14 +100,30 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	tokenStr := hex.EncodeToString(token)
 
 	h.mu.Lock()
-	h.tokens[tokenStr] = true
+	h.tokens[tokenStr] = tokenEntry{createdAt: time.Now()}
 	h.mu.Unlock()
 
 	c.JSON(http.StatusOK, gin.H{"token": tokenStr})
 }
 
+func (h *AuthHandler) Verify(c *gin.Context) {
+	token := c.GetHeader("Authorization")
+	if len(token) > 7 && token[:7] == "Bearer " {
+		token = token[7:]
+	}
+	if token == "" || !h.ValidateToken(token) {
+		c.JSON(http.StatusUnauthorized, gin.H{"valid": false})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"valid": true})
+}
+
 func (h *AuthHandler) ValidateToken(token string) bool {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
-	return h.tokens[token]
+	e, ok := h.tokens[token]
+	if !ok {
+		return false
+	}
+	return time.Since(e.createdAt) < tokenTTL
 }
