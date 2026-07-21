@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 
+	"little-blog/backend/internal/model"
 	"little-blog/backend/internal/repository"
 
 	"github.com/gin-gonic/gin"
@@ -25,13 +26,13 @@ func (h *SearchHandler) Search(c *gin.Context) {
 	}
 
 	all := h.repo.All()
-	var results []gin.H
+	var results []model.Post
 	for _, p := range all {
 		if strings.Contains(strings.ToLower(p.Title), q) ||
 			strings.Contains(strings.ToLower(p.Content), q) {
-			results = append(results, gin.H{
-				"slug": p.Slug, "title": p.Title, "date": p.Date,
-				"tags": p.Tags, "summary": p.Summary,
+			results = append(results, model.Post{
+				Slug: p.Slug, Title: p.Title, Date: p.Date,
+				Tags: p.Tags, Summary: p.Summary,
 			})
 		}
 	}

@@ -3,7 +3,6 @@ import { customElement, state } from 'lit/decorators.js';
 import { getPosts, deletePost } from '../api';
 import { isLoggedIn, logout } from '../services/auth';
 import { navigate } from '../router/router';
-import { icons } from '../utils/icons';
 import { formatDate } from '../utils/time';
 import type { Post } from '../types';
 
@@ -11,6 +10,9 @@ import type { Post } from '../types';
 class AdminPage extends LitElement {
   @state() posts: Post[] = [];
   @state() loading = true;
+  @state() page = 1;
+  @state() total = 0;
+  readonly size = 20;
 
   createRenderRoot() { return this; }
 
@@ -23,10 +25,16 @@ class AdminPage extends LitElement {
   private async _load() {
     this.loading = true;
     try {
-      const res = await getPosts(1, 100);
+      const res = await getPosts(this.page, this.size);
       this.posts = res.posts;
+      this.total = res.total;
     } catch { this.posts = []; }
     this.loading = false;
+  }
+
+  private _go(p: number) {
+    this.page = p;
+    this._load();
   }
 
   private async _delete(slug: string) {
@@ -34,6 +42,8 @@ class AdminPage extends LitElement {
     await deletePost(slug);
     this._load();
   }
+
+  private get _pages() { return Math.max(1, Math.ceil(this.total / this.size)); }
 
   render() {
     return html`
@@ -68,6 +78,14 @@ class AdminPage extends LitElement {
             `)}
           </div>
         `}
+
+        ${this._pages > 1 ? html`
+          <div class="flex justify-center items-center gap-3 mt-8">
+            <button class="btn-ghost px-3 py-1.5 text-sm text-muted rounded-lg cursor-pointer" ?disabled=${this.page <= 1} @click=${() => this._go(this.page - 1)}>← 上一页</button>
+            <span class="text-sm text-muted">${this.page} / ${this._pages}</span>
+            <button class="btn-ghost px-3 py-1.5 text-sm text-muted rounded-lg cursor-pointer" ?disabled=${this.page >= this._pages} @click=${() => this._go(this.page + 1)}>下一页 →</button>
+          </div>
+        ` : nothing}
       </div>
     `;
   }

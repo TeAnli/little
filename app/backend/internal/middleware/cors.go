@@ -9,11 +9,8 @@ import (
 func CORS() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		origin := c.Request.Header.Get("Origin")
-		allowed := map[string]bool{
-			"http://localhost": true, "http://localhost:80": true,
-			"http://localhost:5173": true, "http://127.0.0.1:5173": true,
-		}
-		if allowed[origin] || origin == "" {
+		if origin == "http://localhost:5173" || origin == "http://127.0.0.1:5173" ||
+			origin == "http://localhost" || origin == "" {
 			c.Header("Access-Control-Allow-Origin", origin)
 		}
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
