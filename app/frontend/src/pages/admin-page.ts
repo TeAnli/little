@@ -49,7 +49,7 @@ class AdminPage extends LitElement {
     return html`
       <div class="page-enter">
         <div class="flex items-center justify-between mb-8">
-          <h1 class="font-serif text-2xl font-bold text-fg">管理后台</h1>
+          <h1 class="font-serif text-2xl font-bold text-fg">管理后台 <span class="text-sm font-normal text-muted ml-2">${this.total} 篇</span></h1>
           <div class="flex gap-3">
             <button class="btn-primary px-4 py-2 text-sm text-white dark:text-black rounded-xl cursor-pointer"
               @click=${() => navigate('/editor')}>写文章</button>
