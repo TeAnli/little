@@ -2,7 +2,10 @@ package handler
 
 import (
 	"net/http"
+	"regexp"
 	"strings"
+	"sync"
+	"time"
 
 	"little-blog/backend/internal/model"
 	"little-blog/backend/internal/repository"
@@ -11,12 +14,16 @@ import (
 )
 
 type CommentHandler struct {
-	repo *repository.CommentRepo
+	repo     *repository.CommentRepo
+	rateMap  map[string]time.Time
+	rateMu   sync.Mutex
 }
 
 func NewCommentHandler(repo *repository.CommentRepo) *CommentHandler {
-	return &CommentHandler{repo: repo}
+	return &CommentHandler{repo: repo, rateMap: make(map[string]time.Time)}
 }
+
+var emailRegex = regexp.MustCompile(`^[^@\s]+@[^@\s]+\.[^@\s]+$`)
 
 func (h *CommentHandler) List(c *gin.Context) {
 	comments, err := h.repo.ByPost(c.Param("slug"))
@@ -24,11 +31,23 @@ func (h *CommentHandler) List(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to load comments"})
 		return
 	}
+	maskEmails(comments)
 	c.JSON(http.StatusOK, comments)
 }
 
 func (h *CommentHandler) Create(c *gin.Context) {
 	slug := c.Param("slug")
+
+	ip := c.ClientIP()
+	h.rateMu.Lock()
+	if last, ok := h.rateMap[ip]; ok && time.Since(last) < 10*time.Second {
+		h.rateMu.Unlock()
+		c.JSON(http.StatusTooManyRequests, gin.H{"error": "too fast, wait 10 seconds"})
+		return
+	}
+	h.rateMap[ip] = time.Now()
+	h.rateMu.Unlock()
+
 	var p model.CommentPayload
 	if err := c.ShouldBindJSON(&p); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
@@ -43,6 +62,18 @@ func (h *CommentHandler) Create(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "username, email and content are required"})
 		return
 	}
+	if len(p.Username) > 50 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "username too long"})
+		return
+	}
+	if len(p.Content) > 2000 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "content too long"})
+		return
+	}
+	if !emailRegex.MatchString(p.Email) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid email"})
+		return
+	}
 
 	comment, err := h.repo.Create(slug, p)
 	if err != nil {
@@ -50,4 +81,23 @@ func (h *CommentHandler) Create(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, comment)
+}
+
+func maskEmails(comments []*model.Comment) {
+	for _, c := range comments {
+		c.Email = mask(c.Email)
+		maskEmails(c.Replies)
+	}
+}
+
+func mask(email string) string {
+	parts := strings.SplitN(email, "@", 2)
+	if len(parts) != 2 {
+		return email
+	}
+	name := parts[0]
+	if len(name) <= 2 {
+		return name + "***@" + parts[1]
+	}
+	return name[:2] + "***@" + parts[1]
 }

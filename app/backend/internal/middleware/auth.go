@@ -2,24 +2,19 @@ package middleware
 
 import (
 	"net/http"
-	"os"
 	"strings"
+
+	"little-blog/backend/internal/handler"
 
 	"github.com/gin-gonic/gin"
 )
 
-func Auth() gin.HandlerFunc {
-	pass := os.Getenv("ADMIN_PASSWORD")
-	if pass == "" {
-		pass = "admin"
-	}
-
+func Auth(authH *handler.AuthHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.GetHeader("Authorization")
 		token = strings.TrimPrefix(token, "Bearer ")
 
-		// XXX 简单实现：token 即 password
-		if token != pass {
+		if token == "" || !authH.ValidateToken(token) {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 			c.Abort()
 			return

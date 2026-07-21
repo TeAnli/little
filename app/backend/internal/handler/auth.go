@@ -6,9 +6,11 @@ import (
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/pem"
 	"net/http"
 	"os"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,6 +18,8 @@ import (
 type AuthHandler struct {
 	privateKey *rsa.PrivateKey
 	publicKey  []byte
+	tokens     map[string]bool // valid tokens
+	mu         sync.RWMutex
 }
 
 func NewAuthHandler() *AuthHandler {
@@ -25,7 +29,7 @@ func NewAuthHandler() *AuthHandler {
 	}
 	pubDER, _ := x509.MarshalPKIXPublicKey(&key.PublicKey)
 	pubPEM := pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: pubDER})
-	return &AuthHandler{privateKey: key, publicKey: pubPEM}
+	return &AuthHandler{privateKey: key, publicKey: pubPEM, tokens: make(map[string]bool)}
 }
 
 func (h *AuthHandler) PublicKey(c *gin.Context) {
@@ -57,7 +61,8 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	pass := os.Getenv("ADMIN_PASSWORD")
 	if pass == "" {
-		pass = "admin"
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "server not configured"})
+		return
 	}
 
 	if string(plain) != pass {
@@ -65,5 +70,19 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"token": pass})
+	token := make([]byte, 32)
+	rand.Read(token)
+	tokenStr := hex.EncodeToString(token)
+
+	h.mu.Lock()
+	h.tokens[tokenStr] = true
+	h.mu.Unlock()
+
+	c.JSON(http.StatusOK, gin.H{"token": tokenStr})
+}
+
+func (h *AuthHandler) ValidateToken(token string) bool {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+	return h.tokens[token]
 }
