@@ -8,6 +8,7 @@
 
 | 日期 | 更新 |
 |------|------|
+| 2026-07-19 | 认证系统：Bearer token 中间件 + 管理员登录 API |
 | 2026-07-19 | 文章管理数据层：Create/Update/Delete payload + repo 文件写操作 + service |
 | 2026-07-18 | Bun 脚本：new-post（交互式创建文章）、list-posts（列出所有文章） |
 | 2026-07-18 | Docker 容器化：前端 Nginx + 后端 Alpine + PostgreSQL 编排 |
