@@ -23,8 +23,9 @@ class LoginPage extends LitElement {
       } else {
         this.error = '密码错误';
       }
-    } catch {
+    } catch (e) {
       this.error = '登录失败，请检查后端是否启动';
+      console.error("登陆失败, 错误原因: ", e);
     }
     this.loading = false;
   }
