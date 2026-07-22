@@ -73,10 +73,10 @@ class CommentSection extends LitElement {
       <div class="mt-10 flex flex-col gap-5">
         ${this.loading
         ? Array.from({ length: 3 }).map(() => html`
-              <div class="animate-pulse">
-                <div class="h-3 bg-hairline rounded w-24 mb-3"></div>
-                <div class="h-4 bg-hairline rounded w-full mb-2"></div>
-                <div class="h-4 bg-hairline rounded w-2/3"></div>
+              <div>
+                <div class="shimmer h-3 rounded w-24 mb-3"></div>
+                <div class="shimmer h-4 rounded w-full mb-2"></div>
+                <div class="shimmer h-4 rounded w-2/3"></div>
               </div>
             `)
         : this.comments.length === 0

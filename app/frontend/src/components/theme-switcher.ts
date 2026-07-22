@@ -48,11 +48,13 @@ class ThemeSwitcher extends LitElement {
   render() {
     return html`
       <button
-        class="btn-ghost p-2 rounded-[var(--radius-btn)] text-muted hover:text-fg cursor-pointer"
+        class="btn-ghost micro-lift p-2 rounded-[var(--radius-btn)] text-muted hover:text-fg cursor-pointer group"
         @click=${this._toggle}
         aria-label=${this.current === 'dark' ? '切换到亮色模式' : '切换到暗色模式'}
       >
-        ${this.current === 'dark' ? icons.sun(18) : icons.moon(18)}
+        <span class="block transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110">
+          ${this.current === 'dark' ? icons.sun(18) : icons.moon(18)}
+        </span>
       </button>
     `;
   }

@@ -28,10 +28,10 @@ class CommentItem extends LitElement {
     if (!this.comment) return nothing;
     const c = this.comment;
     return html`
-      <div>
+      <div class="micro-lift group">
         <div class="flex items-center gap-2.5 mb-2">
           <div
-            class="w-7 h-7 rounded-full bg-[rgb(var(--c-fg)/0.06)] flex items-center justify-center text-xs font-semibold shrink-0 text-fg"
+            class="w-7 h-7 rounded-full bg-[rgb(var(--c-fg)/0.06)] flex items-center justify-center text-xs font-semibold shrink-0 text-fg transition-transform duration-300 group-hover:scale-105"
           >
             ${c.username[0]?.toUpperCase()}
           </div>
@@ -40,10 +40,10 @@ class CommentItem extends LitElement {
         </div>
         <p class="text-sm text-fg leading-relaxed mb-2 pl-9">${c.content}</p>
         <button
-          class="text-xs text-subtle hover:text-fg transition-colors cursor-pointer inline-flex items-center gap-1 ml-9"
+          class="micro-lift text-xs text-subtle hover:text-fg cursor-pointer inline-flex items-center gap-1 ml-9 group"
           @click=${this._reply}
         >
-          ${icons.reply(13)}
+          <span class="transition-transform duration-300 group-hover:-translate-y-0.5">${icons.reply(13)}</span>
           <span>回复</span>
         </button>
         ${c.replies.length > 0

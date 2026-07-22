@@ -43,9 +43,9 @@ class TagsPage extends LitElement {
         </div>
 
         ${this.loading
-          ? html`<div class="flex flex-wrap gap-2.5 animate-pulse">
+          ? html`<div class="flex flex-wrap gap-2.5">
               ${Array.from({ length: 8 }).map(
-                () => html`<div class="h-8 bg-hairline rounded-full" style="width: ${70 + Math.random() * 60}px"></div>`
+                () => html`<div class="shimmer h-8 rounded-full" style="width: ${70 + Math.random() * 60}px"></div>`
               )}
             </div>`
           : this.tags.length === 0

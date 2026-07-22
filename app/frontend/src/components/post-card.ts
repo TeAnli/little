@@ -2,6 +2,7 @@ import { LitElement, html, nothing } from 'lit';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { customElement, property } from 'lit/decorators.js';
 import { navigate } from '../router/router';
+import { icons } from '../utils/icons';
 import { formatDate } from '../utils/time';
 import type { Post } from '../types';
 
@@ -30,8 +31,7 @@ class PostCard extends LitElement {
     const p = this.post;
     return html`
       <article
-        class="list-item stagger-item py-7"
-        style="animation-delay: ${Math.min(this.index * 50, 300)}ms"
+        class="list-item py-7"
         @click=${this._go}
         role="link"
         tabindex="0"
@@ -40,7 +40,7 @@ class PostCard extends LitElement {
         }}
       >
         <!-- 元信息行：日期 + 标签 -->
-        <div class="flex items-center gap-3 mb-2.5">
+        <div class="list-meta flex items-center gap-3 mb-2.5 transition-colors duration-300">
           <time class="text-xs text-subtle font-mono tracking-tight">${formatDate(p.date)}</time>
           ${p.tags.length > 0
             ? html`<span class="text-subtle text-xs">·</span>
@@ -49,9 +49,12 @@ class PostCard extends LitElement {
         </div>
 
         <!-- 标题 — hover 下划线展开 -->
-        <h2 class="list-title font-serif text-xl md:text-2xl font-bold text-fg leading-snug mb-2 link-underline inline transition-opacity duration-300">
-          ${p.title}
-        </h2>
+        <div class="flex items-start justify-between gap-4 mb-2">
+          <h2 class="list-title font-serif text-xl md:text-2xl font-bold text-fg leading-snug inline">
+            ${p.title}
+          </h2>
+          <span class="list-arrow text-subtle mt-1.5 shrink-0 transition-transform duration-300 group-hover:translate-x-0.5">${icons.arrowRight(16)}</span>
+        </div>
 
         <!-- 摘要 -->
         <p class="list-summary text-muted text-[0.95rem] leading-relaxed line-clamp-2 transition-colors duration-300">${highlightText(p.summary, this.highlight)}</p>

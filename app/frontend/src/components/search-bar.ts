@@ -82,11 +82,11 @@ class SearchBar extends LitElement {
   render() {
     return html`
       <button
-        class="btn-ghost p-2 rounded-[var(--radius-btn)] text-muted hover:text-fg cursor-pointer"
+        class="btn-ghost micro-lift p-2 rounded-[var(--radius-btn)] text-muted hover:text-fg cursor-pointer group"
         @click=${() => this.openModal()}
         aria-label="搜索文章"
       >
-        ${icons.search(18)}
+        <span class="block transition-transform duration-300 group-hover:scale-110">${icons.search(18)}</span>
       </button>
 
       ${this.open
@@ -136,10 +136,10 @@ class SearchBar extends LitElement {
     return this.results.map(
       (p) => html`
         <button
-          class="w-full flex items-start gap-3 px-5 py-3.5 border-b hairline last:border-0 transition-colors text-left hover:bg-[rgb(var(--c-fg)/0.03)] cursor-pointer"
+          class="hover-bg-scale w-full flex items-start gap-3 px-5 py-3.5 border-b hairline last:border-0 text-left cursor-pointer group"
           @click=${() => this._goToPost(p.slug)}
         >
-          <span class="text-subtle mt-0.5 shrink-0">${icons.search(15)}</span>
+          <span class="text-subtle mt-0.5 shrink-0 transition-transform duration-300 group-hover:scale-110">${icons.search(15)}</span>
           <span class="min-w-0 flex-1">
             <span class="block text-sm font-medium text-fg truncate">${p.title}</span>
             <span class="block text-xs text-subtle truncate font-mono mt-0.5">${p.date}</span>

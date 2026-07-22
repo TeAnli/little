@@ -71,21 +71,21 @@ class PostList extends LitElement {
     return html`
       <div class="flex items-center justify-between mt-14 pt-6 border-t hairline">
         <button
-          class="btn-ghost px-3 py-2 text-sm font-medium text-muted cursor-pointer flex items-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed"
+          class="btn-ghost micro-lift px-3 py-2 text-sm font-medium text-muted cursor-pointer flex items-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed group"
           ?disabled=${this.page <= 1}
           @click=${() => this._changePage(-1)}
         >
-          ${icons.caretLeft(14)}
+          <span class="transition-transform duration-300 group-hover:-translate-x-0.5">${icons.caretLeft(14)}</span>
           <span>Previous</span>
         </button>
         <span class="text-sm text-subtle font-mono">${this.page} / ${this.totalPages}</span>
         <button
-          class="btn-ghost px-3 py-2 text-sm font-medium text-fg cursor-pointer flex items-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed"
+          class="btn-ghost micro-lift px-3 py-2 text-sm font-medium text-fg cursor-pointer flex items-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed group"
           ?disabled=${this.page >= this.totalPages}
           @click=${() => this._changePage(1)}
         >
           <span>Next</span>
-          ${icons.caretRight(14)}
+          <span class="transition-transform duration-300 group-hover:translate-x-0.5">${icons.caretRight(14)}</span>
         </button>
       </div>
     `;

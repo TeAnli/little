@@ -18,7 +18,7 @@ class TagBadge extends LitElement {
   render() {
     return html`
       <button
-        class="badge px-3 py-0.5 inline-flex items-center gap-1.5"
+        class="badge micro-lift px-3 py-0.5 inline-flex items-center gap-1.5"
         @click=${this._go}
       >
         <span class="font-medium">${this.name}</span>

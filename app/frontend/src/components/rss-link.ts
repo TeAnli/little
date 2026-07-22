@@ -14,10 +14,10 @@ class RssLink extends LitElement {
     return html`
       <a
         href=${this.href}
-        class="inline-flex items-center gap-1.5 text-sm text-muted hover:text-fg transition-colors"
+        class="micro-lift inline-flex items-center gap-1.5 text-sm text-muted hover:text-fg transition-colors group"
         aria-label="RSS 订阅"
       >
-        ${icons.rss(14)}
+        <span class="transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-0.5">${icons.rss(14)}</span>
         <span>RSS</span>
       </a>
     `;

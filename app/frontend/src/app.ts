@@ -75,7 +75,7 @@ class BlogApp extends LitElement {
       <div class="min-h-dvh flex flex-col">
         <app-header></app-header>
 
-        <main class="flex-1 w-full max-w-3xl mx-auto px-5 md:px-6 py-12 md:py-20">
+        <main class="flex-1 w-full max-w-6xl mx-auto px-5 md:px-6 py-12 md:py-20">
           ${this._renderKeyed(routeKey)}
         </main>
 

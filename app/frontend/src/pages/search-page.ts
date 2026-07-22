@@ -98,7 +98,7 @@ class SearchPage extends LitElement {
           <p class="text-muted text-base mb-1">没有找到相关文章</p>
           <p class="text-sm text-subtle mb-6">换个关键词试试吧</p>
           <button
-            class="btn-ghost px-4 py-2 rounded-[var(--radius-btn)] text-sm text-fg cursor-pointer"
+            class="btn-ghost micro-lift px-4 py-2 rounded-[var(--radius-btn)] text-sm text-fg cursor-pointer"
             @click=${() => navigate('/')}
           >
             返回首页
