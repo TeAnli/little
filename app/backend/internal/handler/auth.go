@@ -72,25 +72,25 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	encrypted, err := base64.StdEncoding.DecodeString(req.Password)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
-		return
-	}
-
-	plain, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, h.privateKey, encrypted, nil)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
-		return
-	}
-
 	pass := os.Getenv("ADMIN_PASSWORD")
 	if pass == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
 
-	if string(plain) != pass {
+	var submitted string
+
+	// Try RSA decrypt first (HTTPS); fall back to plaintext (HTTP)
+	if encrypted, err := base64.StdEncoding.DecodeString(req.Password); err == nil {
+		if decrypted, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, h.privateKey, encrypted, nil); err == nil {
+			submitted = string(decrypted)
+		}
+	}
+	if submitted == "" {
+		submitted = req.Password
+	}
+
+	if submitted != pass {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}

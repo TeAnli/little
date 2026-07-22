@@ -16,21 +16,6 @@ export function isLoggedIn(): boolean {
   return !!getToken();
 }
 
-export async function verifyToken(): Promise<boolean> {
-  const token = getToken();
-  if (!token) return false;
-  try {
-    const res = await fetch('/api/auth/verify', {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
-    if (!data.valid) { clearToken(); return false; }
-    return true;
-  } catch {
-    return !!getToken(); // offline → trust local
-  }
-}
-
 async function fetchPublicKey(): Promise<CryptoKey> {
   const res = await fetch('/api/auth/public-key');
   const data = await res.json();
@@ -40,15 +25,23 @@ async function fetchPublicKey(): Promise<CryptoKey> {
 }
 
 export async function login(password: string): Promise<boolean> {
-  const publicKey = await fetchPublicKey();
-  const encoded = new TextEncoder().encode(password);
-  const encrypted = await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, publicKey, encoded);
-  const b64 = btoa(String.fromCharCode(...new Uint8Array(encrypted)));
+  const hasCrypto = typeof crypto !== 'undefined' && crypto.subtle;
+
+  let body: string;
+  if (hasCrypto) {
+    const publicKey = await fetchPublicKey();
+    const encoded = new TextEncoder().encode(password);
+    const encrypted = await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, publicKey, encoded);
+    const b64 = btoa(String.fromCharCode(...new Uint8Array(encrypted)));
+    body = JSON.stringify({ password: b64 });
+  } else {
+    body = JSON.stringify({ password: password });
+  }
 
   const res = await fetch('/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password: b64 }),
+    body,
   });
   if (!res.ok) return false;
   const data = await res.json();
@@ -60,4 +53,19 @@ export function logout() {
   clearToken();
   window.location.hash = '#/';
   window.location.reload();
+}
+
+export async function verifyToken(): Promise<boolean> {
+  const token = getToken();
+  if (!token) return false;
+  try {
+    const res = await fetch('/api/auth/verify', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (!data.valid) { clearToken(); return false; }
+    return true;
+  } catch {
+    return !!getToken();
+  }
 }
