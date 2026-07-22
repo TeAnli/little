@@ -28,6 +28,7 @@ class CommentSection extends LitElement {
       this.comments = await getComments(this.slug) || [];
       // console.log('comments:', this.comments)
     } catch (e) {
+      console.error('Failed to load comments:', e);
       this.error = '评论加载失败';
     } finally {
       this.loading = false;
@@ -49,6 +50,7 @@ class CommentSection extends LitElement {
       }
       this.requestUpdate();
     } catch (err) {
+      console.error('Failed to post comment:', err);
       this.error = '发表评论失败，请重试';
     }
   }

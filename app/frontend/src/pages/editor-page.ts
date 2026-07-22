@@ -36,7 +36,7 @@ class EditorPage extends LitElement {
       const p = await getPost(this.slug);
       this.title = p.title; this.tags = p.tags.join(', ');
       this.summary = p.summary; this.content = p.content || ''; this.date = p.date;
-    } catch { this.error = '文章加载失败'; }
+    } catch (e) { console.error('Failed to load post for editing:', e); this.error = '文章加载失败'; }
   }
 
   private async _submit(e: Event) {
@@ -48,7 +48,7 @@ class EditorPage extends LitElement {
       if (this.slug) { await updatePost(this.slug, payload); }
       else { await createPost(payload); }
       navigate('/admin');
-    } catch (err: any) { this.error = err.message || '保存失败'; }
+    } catch (err: any) { console.error('Failed to save post:', err); this.error = err.message || '保存失败'; }
     this.saving = false;
   }
 

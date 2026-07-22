@@ -36,6 +36,7 @@ class PostPage extends LitElement {
     try {
       this.post = await getPost(this.slug);
     } catch (e) {
+      console.error('Failed to load post:', e);
       this.error = '文章加载失败';
       this.post = null;
     } finally {
