@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"log"
+	"net/url"
 	"os"
 	"time"
 
@@ -19,19 +21,14 @@ func NewRSSHandler(repo *repository.PostRepo) *RSSHandler {
 }
 
 func (h *RSSHandler) Feed(c *gin.Context) {
-	title := os.Getenv("SITE_TITLE")
-	if title == "" {
-		title = "Little Blog"
-	}
-	siteURL := os.Getenv("SITE_URL")
-	if siteURL == "" {
-		siteURL = "http://localhost"
-	}
+	title := env("SITE_TITLE", "Little Blog")
+	siteURL := env("SITE_URL", "http://localhost")
+	author := env("SITE_AUTHOR", "Little Blog")
 
 	feed := &feeds.Feed{
 		Title:       title,
 		Link:        &feeds.Link{Href: siteURL},
-		Description: "A minimal blog",
+		Description: title + " — A minimal blog",
 		Created:     time.Now(),
 	}
 
@@ -39,15 +36,36 @@ func (h *RSSHandler) Feed(c *gin.Context) {
 		if len(feed.Items) >= 20 {
 			break
 		}
-		t, _ := time.Parse("2006-01-02", p.Date)
+
+		postURL, _ := url.JoinPath(siteURL, "/post/", p.Slug)
+		t, err := time.Parse("2006-01-02", p.Date)
+		if err != nil {
+			t = time.Now()
+		}
+
 		feed.Items = append(feed.Items, &feeds.Item{
+			Id:          postURL,
 			Title:       p.Title,
-			Link:        &feeds.Link{Href: siteURL + "/post/" + p.Slug},
+			Link:        &feeds.Link{Href: postURL},
 			Description: p.Summary,
+			Content:     p.Content,
+			Author:      &feeds.Author{Name: author},
 			Created:     t,
 		})
 	}
 
-	rss, _ := feed.ToRss()
+	rss, err := feed.ToRss()
+	if err != nil {
+		log.Printf("RSS generation failed: %v", err)
+		c.String(500, "RSS generation failed")
+		return
+	}
 	c.Data(200, "application/rss+xml; charset=utf-8", []byte(rss))
+}
+
+func env(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return fallback
 }

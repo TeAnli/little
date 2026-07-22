@@ -25,7 +25,8 @@ class CommentSection extends LitElement {
     this.loading = true;
     this.error = '';
     try {
-      this.comments = await getComments(this.slug);
+      this.comments = await getComments(this.slug) || [];
+      // console.log('comments:', this.comments)
     } catch (e) {
       this.error = '评论加载失败';
     } finally {
@@ -69,16 +70,16 @@ class CommentSection extends LitElement {
 
       <div class="mt-10 flex flex-col gap-5">
         ${this.loading
-          ? Array.from({ length: 3 }).map(() => html`
+        ? Array.from({ length: 3 }).map(() => html`
               <div class="animate-pulse">
                 <div class="h-3 bg-hairline rounded w-24 mb-3"></div>
                 <div class="h-4 bg-hairline rounded w-full mb-2"></div>
                 <div class="h-4 bg-hairline rounded w-2/3"></div>
               </div>
             `)
-          : this.comments.length === 0
-            ? html`<div class="py-8 text-center text-sm text-subtle">还没有评论，来发表第一条吧</div>`
-            : this.comments.map((c) => html`<comment-item .comment=${c}></comment-item>`)}
+        : this.comments.length === 0
+          ? html`<div class="py-8 text-center text-sm text-subtle">还没有评论，来发表第一条吧</div>`
+          : this.comments.map((c) => html`<comment-item .comment=${c}></comment-item>`)}
       </div>
 
       ${this.error

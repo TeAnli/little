@@ -243,20 +243,6 @@ body::before {
 }
 
 @layer utilities {
-  /* 页面过渡 — 更轻的位移，soft 缓动 */
-  .page-enter {
-    animation: pageEnter 0.45s var(--ease-soft);
-  }
-  @keyframes pageEnter {
-    from {
-      opacity: 0;
-      transform: translateY(8px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
 
   /* 列表项 stagger 入场 — 错落渐显 */
   .stagger-item {
@@ -433,6 +419,96 @@ body::before {
   font-size: 0.8125rem;
   line-height: 1.7;
 }
+
+/* 代码块容器 + 复制按钮 */
+.code-block-wrapper {
+  position: relative;
+  margin-bottom: 1.5rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid rgb(var(--c-border) / 0.5);
+  background: rgb(var(--c-fg) / 0.03);
+}
+.code-block-wrapper pre {
+  margin: 0;
+  border: 0;
+  background: transparent;
+  padding: 2.5rem 1.25rem 1.125rem;
+}
+.code-lang {
+  position: absolute;
+  top: 0.625rem;
+  left: 1rem;
+  font-size: 0.675rem;
+  color: rgb(var(--c-subtle));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: 'JetBrains Mono', monospace;
+}
+.code-copy {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.7rem;
+  color: rgb(var(--c-subtle));
+  background: rgb(var(--c-fg) / 0.06);
+  border: 1px solid rgb(var(--c-border) / 0.4);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
+}
+.code-copy:hover {
+  color: rgb(var(--c-fg));
+  background: rgb(var(--c-fg) / 0.1);
+  border-color: rgb(var(--c-fg) / 0.2);
+}
+
+/* dark mode — 代码块背景加深 */
+[data-theme='dark'] .code-block-wrapper {
+  background: rgb(0 0 0 / 0.25);
+}
+
+/* dark mode — highlight.js 亮色主题逆向 */
+[data-theme='dark'] .hljs { color: #c9d1d9; }
+[data-theme='dark'] .hljs-doctag,
+[data-theme='dark'] .hljs-keyword,
+[data-theme='dark'] .hljs-meta .hljs-keyword,
+[data-theme='dark'] .hljs-template-tag,
+[data-theme='dark'] .hljs-template-variable,
+[data-theme='dark'] .hljs-type,
+[data-theme='dark'] .hljs-variable.language_ { color: #ff7b72; }
+[data-theme='dark'] .hljs-title,
+[data-theme='dark'] .hljs-title.class_,
+[data-theme='dark'] .hljs-title.class_.inherited__,
+[data-theme='dark'] .hljs-title.function_ { color: #d2a8ff; }
+[data-theme='dark'] .hljs-attr,
+[data-theme='dark'] .hljs-attribute,
+[data-theme='dark'] .hljs-literal,
+[data-theme='dark'] .hljs-meta,
+[data-theme='dark'] .hljs-number,
+[data-theme='dark'] .hljs-operator,
+[data-theme='dark'] .hljs-variable,
+[data-theme='dark'] .hljs-selector-attr,
+[data-theme='dark'] .hljs-selector-class,
+[data-theme='dark'] .hljs-selector-id { color: #79c0ff; }
+[data-theme='dark'] .hljs-regexp,
+[data-theme='dark'] .hljs-string,
+[data-theme='dark'] .hljs-meta .hljs-string { color: #a5d6ff; }
+[data-theme='dark'] .hljs-built_in,
+[data-theme='dark'] .hljs-symbol { color: #ffa657; }
+[data-theme='dark'] .hljs-comment,
+[data-theme='dark'] .hljs-code,
+[data-theme='dark'] .hljs-formula { color: #8b949e; }
+[data-theme='dark'] .hljs-name,
+[data-theme='dark'] .hljs-quote,
+[data-theme='dark'] .hljs-selector-tag,
+[data-theme='dark'] .hljs-selector-pseudo { color: #7ee787; }
+[data-theme='dark'] .hljs-subst { color: #c9d1d9; }
+[data-theme='dark'] .hljs-section { color: #1f6feb; font-weight: 700; }
+[data-theme='dark'] .hljs-bullet { color: #f2cc60; }
+[data-theme='dark'] .hljs-emphasis { font-style: italic; }
+[data-theme='dark'] .hljs-strong { font-weight: 700; }
 .prose-blog blockquote {
   border-left: 2px solid rgb(var(--c-fg) / 0.2);
   padding-left: 1.25rem;
@@ -472,6 +548,55 @@ body::before {
   margin: 2.5rem 0;
 }
 
+/* 数学公式块 */
+.math-block {
+  display: flex;
+  justify-content: center;
+  margin: 2rem 0;
+  padding: 1rem 0;
+  overflow-x: auto;
+}
+.math-block .katex { font-size: 1.1em; }
+
+/* 表格 */
+.prose-blog table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.925rem;
+}
+.prose-blog th,
+.prose-blog td {
+  border: 1px solid rgb(var(--c-border));
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+.prose-blog th {
+  background: rgb(var(--c-fg) / 0.04);
+  font-weight: 600;
+}
+
+
+/* View Transition — 主题切换圆形扩散 */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  z-index: 1;
+  animation: vt-expand 0.6s linear;
+}
+
+@keyframes vt-expand {
+  from { clip-path: circle(1px at var(--theme-toggle-x) var(--theme-toggle-y)); }
+  to   { clip-path: circle(var(--theme-toggle-r) at var(--theme-toggle-x) var(--theme-toggle-y)); }
+}
+/* 
+::view-transition-new(root) {
+  animation: none;
+} */
 /* reduced-motion 支持 */
 @media (prefers-reduced-motion: reduce) {
   *,

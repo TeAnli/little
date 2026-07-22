@@ -57,7 +57,7 @@ func (h *AuthHandler) cleanupLoop() {
 }
 
 func (h *AuthHandler) PublicKey(c *gin.Context) {
-	c.Header("Cache-Control", "public, max-age=3600")
+	c.Header("Cache-Control", "no-cache")
 	c.JSON(http.StatusOK, gin.H{"public_key": string(h.publicKey)})
 }
 
