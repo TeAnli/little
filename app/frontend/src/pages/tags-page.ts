@@ -2,9 +2,9 @@ import { LitElement, html, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { getTags } from '../api';
 import { navigate } from '../router/router';
+import { icons } from '../utils/icons';
 import type { Tag } from '../types';
 
-// 标签页 — 精炼标签云，按文章数排序
 @customElement('tags-page')
 class TagsPage extends LitElement {
   @state() tags: Tag[] = [];
@@ -23,7 +23,8 @@ class TagsPage extends LitElement {
     this.loading = true;
     try {
       this.tags = await getTags();
-    } catch {
+    } catch (error) {
+      console.error('Failed to load tags:', error);
       this.tags = [];
     } finally {
       this.loading = false;
@@ -34,38 +35,73 @@ class TagsPage extends LitElement {
     navigate(`/tag/${encodeURIComponent(name)}`);
   }
 
+  private get totalPosts() {
+    return this.tags.reduce((sum, tag) => sum + tag.count, 0);
+  }
+
+  private _renderLoading() {
+    return html`
+      <div class="tag-list">
+        ${Array.from({ length: 6 }).map(() => html`
+          <div class="tag-row">
+            <div class="min-w-0 flex-1">
+              <div class="shimmer h-5 rounded w-32 mb-3"></div>
+              <div class="shimmer h-2 rounded w-full"></div>
+            </div>
+            <div class="shimmer h-8 rounded-[6px] w-16"></div>
+          </div>
+        `)}
+      </div>
+    `;
+  }
+
   render() {
+    const max = this.tags[0]?.count || 1;
+
     return html`
       <div class="page-enter">
-        <div class="mb-14">
+        <section class="tags-hero">
+          <p class="home-kicker">Tags</p>
           <h1 class="font-serif text-3xl md:text-4xl font-bold text-fg leading-tight">所有标签</h1>
-          <p class="text-muted mt-3 text-base md:text-lg">按文章数量排序，点击筛选相关文章</p>
-        </div>
+          <p class="text-muted mt-3 text-base md:text-lg leading-8">
+            按文章数量纵向排列，快速定位一个主题，再进入对应文章列表。
+          </p>
+          <div class="tags-summary">
+            <span>${this.tags.length} 个标签</span>
+            <span>${this.totalPosts} 次归档</span>
+          </div>
+        </section>
 
         ${this.loading
-          ? html`<div class="flex flex-wrap gap-2.5">
-              ${Array.from({ length: 8 }).map(
-                () => html`<div class="shimmer h-8 rounded-full" style="width: ${70 + Math.random() * 60}px"></div>`
-              )}
-            </div>`
+          ? this._renderLoading()
           : this.tags.length === 0
             ? html`<div class="py-20 text-center"><p class="text-muted text-base">还没有标签</p></div>`
-            : html`<div class="flex flex-wrap gap-2.5 items-center">
-                ${this.tags.map((t) => {
-                  const max = this.tags[0]?.count || 1;
-                  const fontSize = (0.875 + (t.count / max) * 0.5).toFixed(3);
-                  return html`
-                    <button
-                      class="tag-cloud-item badge inline-flex items-center gap-1.5 px-3.5 py-1.5 cursor-pointer"
-                      style="font-size: ${fontSize}rem"
-                      @click=${() => this._goTag(t.name)}
-                    >
-                      <span class="font-medium">${t.name}</span>
-                      <span class="text-xs opacity-50">${t.count}</span>
-                    </button>
-                  `;
-                })}
-              </div>`}
+            : html`
+                <div class="tag-list">
+                  ${this.tags.map((tag, index) => {
+                    const percent = Math.max(8, Math.round((tag.count / max) * 100));
+                    return html`
+                      <button class="tag-row" type="button" @click=${() => this._goTag(tag.name)}>
+                        <span class="tag-index">${String(index + 1).padStart(2, '0')}</span>
+                        <span class="tag-main">
+                          <span class="tag-title">
+                            <span>${tag.name}</span>
+                            ${index === 0 ? html`<span class="tag-featured">最多阅读</span>` : nothing}
+                          </span>
+                          <span class="tag-meter" aria-hidden="true">
+                            <span style="width: ${percent}%"></span>
+                          </span>
+                        </span>
+                        <span class="tag-count">
+                          <strong>${tag.count}</strong>
+                          <span>篇</span>
+                        </span>
+                        <span class="tag-arrow">${icons.arrowRight(15)}</span>
+                      </button>
+                    `;
+                  })}
+                </div>
+              `}
       </div>
     `;
   }
