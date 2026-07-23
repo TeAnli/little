@@ -10,6 +10,7 @@ import (
 	"encoding/pem"
 	"net/http"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -20,15 +21,25 @@ type tokenEntry struct {
 	createdAt time.Time
 }
 
+type loginAttempt struct {
+	failures    int
+	firstFailed time.Time
+	lockedUntil time.Time
+}
+
 type AuthHandler struct {
 	privateKey *rsa.PrivateKey
 	publicKey  []byte
 	tokens     map[string]tokenEntry
+	attempts   map[string]loginAttempt
 	mu         sync.RWMutex
 }
 
 const tokenTTL = 24 * time.Hour
 const cleanupInterval = 1 * time.Hour
+const loginRateLimitWindow = 15 * time.Minute
+const loginRateLimitLockout = 15 * time.Minute
+const loginRateLimitMaxFailures = 5
 
 func NewAuthHandler() *AuthHandler {
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -37,7 +48,12 @@ func NewAuthHandler() *AuthHandler {
 	}
 	pubDER, _ := x509.MarshalPKIXPublicKey(&key.PublicKey)
 	pubPEM := pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: pubDER})
-	h := &AuthHandler{privateKey: key, publicKey: pubPEM, tokens: make(map[string]tokenEntry)}
+	h := &AuthHandler{
+		privateKey: key,
+		publicKey:  pubPEM,
+		tokens:     make(map[string]tokenEntry),
+		attempts:   make(map[string]loginAttempt),
+	}
 	go h.cleanupLoop()
 	return h
 }
@@ -50,6 +66,15 @@ func (h *AuthHandler) cleanupLoop() {
 		for k, v := range h.tokens {
 			if now.Sub(v.createdAt) > tokenTTL {
 				delete(h.tokens, k)
+			}
+		}
+		for k, v := range h.attempts {
+			if v.lockedUntil.IsZero() && now.Sub(v.firstFailed) > loginRateLimitWindow {
+				delete(h.attempts, k)
+				continue
+			}
+			if !v.lockedUntil.IsZero() && now.After(v.lockedUntil.Add(loginRateLimitWindow)) {
+				delete(h.attempts, k)
 			}
 		}
 		h.mu.Unlock()
@@ -66,8 +91,15 @@ type loginReq struct {
 }
 
 func (h *AuthHandler) Login(c *gin.Context) {
+	if retryAfter, limited := h.loginRetryAfter(c.ClientIP()); limited {
+		c.Header("Retry-After", retryAfter)
+		c.JSON(http.StatusTooManyRequests, gin.H{"error": "too many login attempts"})
+		return
+	}
+
 	var req loginReq
 	if err := c.ShouldBindJSON(&req); err != nil {
+		h.recordLoginFailure(c.ClientIP())
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
@@ -91,6 +123,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	if submitted != pass {
+		h.recordLoginFailure(c.ClientIP())
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
@@ -104,9 +137,52 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	h.mu.Lock()
 	h.tokens[tokenStr] = tokenEntry{createdAt: time.Now()}
+	delete(h.attempts, c.ClientIP())
 	h.mu.Unlock()
 
 	c.JSON(http.StatusOK, gin.H{"token": tokenStr})
+}
+
+func (h *AuthHandler) loginRetryAfter(ip string) (string, bool) {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
+	attempt, ok := h.attempts[ip]
+	if !ok || attempt.lockedUntil.IsZero() {
+		return "", false
+	}
+
+	remaining := time.Until(attempt.lockedUntil)
+	if remaining <= 0 {
+		return "", false
+	}
+	return stringSeconds(remaining), true
+}
+
+func (h *AuthHandler) recordLoginFailure(ip string) {
+	now := time.Now()
+
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	attempt := h.attempts[ip]
+	if attempt.firstFailed.IsZero() || now.Sub(attempt.firstFailed) > loginRateLimitWindow {
+		attempt = loginAttempt{firstFailed: now}
+	}
+
+	attempt.failures++
+	if attempt.failures >= loginRateLimitMaxFailures {
+		attempt.lockedUntil = now.Add(loginRateLimitLockout)
+	}
+	h.attempts[ip] = attempt
+}
+
+func stringSeconds(duration time.Duration) string {
+	seconds := int(duration.Seconds())
+	if seconds < 1 {
+		seconds = 1
+	}
+	return strconv.Itoa(seconds)
 }
 
 func (h *AuthHandler) Verify(c *gin.Context) {
