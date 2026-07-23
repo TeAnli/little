@@ -4,6 +4,7 @@ import gsap from 'gsap';
 import { navigate, parseHash } from '../router/router';
 import { isLoggedIn } from '../services/auth';
 import { icons } from '../utils/icons';
+import { siteConfig } from '../config/site';
 
 interface NavItem {
   label: string;
@@ -24,6 +25,7 @@ class AppHeader extends LitElement {
   @state() currentPath = '/';
 
   private readonly reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  private resizeTimer?: number;
 
   createRenderRoot() {
     return this;
@@ -33,11 +35,14 @@ class AppHeader extends LitElement {
     super.connectedCallback();
     this._updateActive();
     window.addEventListener('hashchange', this._updateActive);
+    window.addEventListener('resize', this._onResize);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     window.removeEventListener('hashchange', this._updateActive);
+    window.removeEventListener('resize', this._onResize);
+    if (this.resizeTimer) window.clearTimeout(this.resizeTimer);
   }
 
   firstUpdated() {
@@ -48,14 +53,22 @@ class AppHeader extends LitElement {
     return NAV_ITEMS.filter((item) => !item.auth || isLoggedIn());
   }
 
-  private _updateActive = () => {
+  private _activePathFromRoute() {
     const route = parseHash();
-    this.currentPath =
-      route.page === 'home' ? '/'
-        : route.page === 'tags' ? '/tags'
-          : route.page === 'admin' ? '/admin'
-            : '';
+    if (route.page === 'home') return '/';
+    if (route.page === 'tags' || route.page === 'tag') return '/tags';
+    if (route.page === 'admin' || route.page === 'editor') return '/admin';
+    return '';
+  }
+
+  private _updateActive = () => {
+    this.currentPath = this._activePathFromRoute();
     requestAnimationFrame(() => this._restoreActiveNav(true));
+  };
+
+  private _onResize = () => {
+    if (this.resizeTimer) window.clearTimeout(this.resizeTimer);
+    this.resizeTimer = window.setTimeout(() => this._restoreActiveNav(true), 120);
   };
 
   private _closeDrawer = () => {
@@ -91,7 +104,8 @@ class AppHeader extends LitElement {
       width: targetRect.width,
       height: targetRect.height,
       opacity: 1,
-      scale: 1,
+      scaleX: 1,
+      scaleY: 1,
       duration: immediate || this.reducedMotion.matches ? 0 : 0.34,
       ease: 'power3.out',
       overwrite: true,
@@ -106,7 +120,7 @@ class AppHeader extends LitElement {
     this._navLinks().forEach((link) => {
       gsap.to(link, {
         y: link === target ? -1 : 0,
-        scale: link === target ? 1.015 : 1,
+        scale: link === target ? 1.012 : 1,
         duration: this.reducedMotion.matches ? 0 : 0.2,
         ease: 'power2.out',
         overwrite: true,
@@ -127,6 +141,7 @@ class AppHeader extends LitElement {
       gsap.to(bg, {
         opacity: 0,
         scaleX: 0.5,
+        scaleY: 0.96,
         duration: immediate || this.reducedMotion.matches ? 0 : 0.2,
         ease: 'power2.out',
         overwrite: true,
@@ -186,7 +201,7 @@ class AppHeader extends LitElement {
               class="brand-mark"
               @click=${() => this._navigate('/')}
             >
-              Little Blog
+              ${siteConfig.title}
             </a>
             <button
               class="btn-ghost micro-lift p-2 text-muted hover:text-fg cursor-pointer"
@@ -224,7 +239,7 @@ class AppHeader extends LitElement {
             @click=${() => navigate('/')}
             aria-label="回到首页"
           >
-            Little Blog
+            ${siteConfig.title}
           </a>
 
           ${this._renderDesktopNav()}

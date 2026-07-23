@@ -3,6 +3,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { getPosts } from '../api';
 import { navigate } from '../router/router';
 import { icons } from '../utils/icons';
+import { siteConfig } from '../config/site';
 import type { Post } from '../types';
 
 @customElement('home-page')
@@ -14,7 +15,6 @@ class HomePage extends LitElement {
   @property({ type: String }) tag = '';
 
   size = 10;
-  private readonly githubUrl = 'https://github.com/TeAnli';
   private _loaded = false;
 
   createRenderRoot() {
@@ -93,12 +93,12 @@ class HomePage extends LitElement {
       <div class="page-enter page-wide">
         <section class="home-hero">
           <div class="home-hero-copy">
-            <p class="home-kicker">Little Blog</p>
+            <p class="home-kicker">${siteConfig.hero.eyebrow}</p>
             <h1 class="font-serif text-4xl md:text-6xl font-bold text-fg leading-[1.08]">
-              在这里，留下一些慢慢想清楚的东西。
+              ${siteConfig.hero.title}
             </h1>
             <p class="text-muted mt-5 text-base md:text-lg leading-8 max-w-2xl">
-              写给当下，也写给之后回头看的自己。
+              ${siteConfig.hero.subtitle}
             </p>
             <div class="flex flex-wrap items-center gap-3 mt-8">
               <button
@@ -126,8 +126,10 @@ class HomePage extends LitElement {
               <strong>${this.loading ? '...' : this.total}</strong>
             </div>
             <div class="home-stat">
-              <span>GitHub</span>
-              <a href=${this.githubUrl} target="_blank" rel="noreferrer">TeAnli</a>
+              <span>${siteConfig.social.github.label}</span>
+              <a href=${siteConfig.social.github.url} target="_blank" rel="noreferrer">
+                ${siteConfig.social.github.display}
+              </a>
             </div>
             <div class="home-stat">
               <span>更新</span>

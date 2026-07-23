@@ -4,8 +4,8 @@ import { parseHash, onRouteChange, navigate, type ParsedRoute } from './router/r
 import './router/routes';
 import { icons } from './utils/icons';
 import { initTheme } from './utils/theme';
+import { siteConfig } from './config/site';
 
-// 注册全部组件（副作用导入，触发 customElements.define）
 import './components/app-header';
 import './components/search-bar';
 import './components/theme-switcher';
@@ -18,7 +18,6 @@ import './components/comment-item';
 import './components/comment-form';
 import './components/comment-section';
 
-// 注册页面
 import './pages/home-page';
 import './pages/post-page';
 import './pages/tags-page';
@@ -38,8 +37,10 @@ class BlogApp extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     initTheme();
-    onRouteChange((r) => {
-      this.route = r;
+    document.title = siteConfig.title;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', siteConfig.description);
+    onRouteChange((route) => {
+      this.route = route;
       window.scrollTo({ top: 0, behavior: 'auto' });
     });
     window.addEventListener('scroll', this._onScroll);
@@ -51,8 +52,8 @@ class BlogApp extends LitElement {
   }
 
   private _onScroll = () => {
-    const h = document.documentElement.scrollHeight - window.innerHeight;
-    this.scrollProgress = h > 0 ? Math.min(window.scrollY / h, 1) : 0;
+    const height = document.documentElement.scrollHeight - window.innerHeight;
+    this.scrollProgress = height > 0 ? Math.min(window.scrollY / height, 1) : 0;
     this.showBackTop = window.scrollY > 500;
   };
 
@@ -61,16 +62,24 @@ class BlogApp extends LitElement {
     return render(params, query);
   }
 
+  private _renderKeyed(key: string) {
+    return html`<div data-route-key=${key} class="page-outlet">${this._renderPage()}</div>`;
+  }
+
   render() {
-    // 用 route.page + 关键参数作为 key，确保页面切换时组件重建
     const { page, params, query } = this.route;
     const routeKey = `${page}:${params.slug || params.tag || query.q || ''}`;
 
     return html`
       <div class="reading-progress" style="transform:scaleX(${this.scrollProgress})"></div>
       ${this.showBackTop ? html`
-        <button class="back-to-top" @click=${() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          aria-label="返回顶部">${icons.arrowUp(16)}</button>
+        <button
+          class="back-to-top"
+          @click=${() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          aria-label="返回顶部"
+        >
+          ${icons.arrowUp(16)}
+        </button>
       ` : nothing}
       <div class="min-h-dvh flex flex-col">
         <app-header></app-header>
@@ -83,7 +92,7 @@ class BlogApp extends LitElement {
           <div class="max-w-3xl mx-auto px-5 md:px-6 py-10">
             <div class="flex flex-col md:flex-row items-center justify-between gap-4">
               <p class="text-sm text-subtle">
-                © ${new Date().getFullYear()} Little Blog
+                ${siteConfig.footer.copyrightPrefix} ${new Date().getFullYear()} ${siteConfig.title}
               </p>
               <div class="flex items-center gap-6">
                 <a
@@ -103,10 +112,5 @@ class BlogApp extends LitElement {
         </footer>
       </div>
     `;
-  }
-
-  // keyed 渲染：借助不同 key 让 lit 在路由切换时重建页面组件（触发入场动画与数据重载）
-  private _renderKeyed(key: string) {
-    return html`<div data-route-key=${key} class="page-outlet">${this._renderPage()}</div>`;
   }
 }
