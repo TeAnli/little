@@ -212,7 +212,8 @@ body::before {
     font-size: 0.75rem;
   }
 
-  .home-stat strong {
+  .home-stat strong,
+  .home-stat a {
     max-width: 11rem;
     overflow: hidden;
     color: rgb(var(--c-fg));
@@ -221,6 +222,16 @@ body::before {
     font-weight: 600;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .home-stat a {
+    text-decoration: none;
+    transition: opacity 0.22s var(--ease-out), transform 0.22s var(--ease-out);
+  }
+
+  .home-stat a:hover {
+    opacity: 0.72;
+    transform: translateX(1px);
   }
 
   .home-posts {
@@ -437,6 +448,131 @@ body::before {
     background-color: rgb(var(--c-base) / 0.72);
     backdrop-filter: blur(12px) saturate(160%);
     -webkit-backdrop-filter: blur(12px) saturate(160%);
+  }
+
+  .site-header {
+    border-bottom: 1px solid rgb(var(--c-hairline));
+    background: rgb(var(--c-base));
+  }
+
+  .header-shell {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    max-width: 72rem;
+    min-height: 4rem;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .header-shell {
+      padding: 0 1.5rem;
+    }
+  }
+
+  .brand-mark {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    color: rgb(var(--c-fg));
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0;
+    transition: opacity 0.22s var(--ease-out), transform 0.22s var(--ease-out);
+  }
+
+  .brand-mark:hover,
+  .brand-mark:focus-visible {
+    opacity: 0.72;
+    transform: translateY(-1px);
+  }
+
+  .header-actions {
+    display: inline-flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.25rem;
+    min-width: 0;
+  }
+
+  .mobile-drawer {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: min(19rem, calc(100vw - 2rem));
+    padding: 1.25rem;
+    border-left: 1px solid rgb(var(--c-hairline));
+    background: rgb(var(--c-surface));
+    box-shadow: var(--shadow-lg);
+  }
+
+  .mobile-nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .mobile-nav-item {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 3rem;
+    padding: 0 0.875rem;
+    border-radius: 6px;
+    color: rgb(var(--c-muted));
+    font-size: 0.9375rem;
+    font-weight: 500;
+    transition: color 0.22s var(--ease-out), transform 0.22s var(--ease-out);
+  }
+
+  .mobile-nav-item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: rgb(var(--c-fg) / 0.065);
+    opacity: 0;
+    transform: scaleX(0.5);
+    transform-origin: center;
+    transition: transform 0.32s var(--ease-out), opacity 0.22s var(--ease-out);
+  }
+
+  .mobile-nav-item:hover,
+  .mobile-nav-item:focus-visible,
+  .mobile-nav-item.is-active {
+    color: rgb(var(--c-fg));
+    transform: translateY(-1px);
+  }
+
+  .mobile-nav-item:hover::before,
+  .mobile-nav-item:focus-visible::before,
+  .mobile-nav-item.is-active::before {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+
+  .mobile-nav-item > span:last-child {
+    display: inline-flex;
+    color: rgb(var(--c-subtle));
+    transition: color 0.22s var(--ease-out), transform 0.22s var(--ease-out);
+  }
+
+  .mobile-nav-item:hover > span:last-child,
+  .mobile-nav-item:focus-visible > span:last-child,
+  .mobile-nav-item.is-active > span:last-child {
+    color: rgb(var(--c-fg));
+    transform: translateX(2px);
   }
 
   /* 卡片 — 仅用于模态/表单/评论，更轻的阴影 + 极细边框 */
@@ -912,7 +1048,9 @@ body::before {
 
   /* 导航激活态下划线 */
   .nav-pill-wrap {
-    min-height: 2.625rem;
+    min-height: 2.5rem;
+    border-radius: 8px;
+    background: rgb(var(--c-fg) / 0.035);
     isolation: isolate;
   }
   .nav-hover-bg {
@@ -924,7 +1062,7 @@ body::before {
     opacity: 0;
     z-index: 0;
     border-radius: 6px;
-    background: rgb(var(--c-fg) / 0.08);
+    background: rgb(var(--c-fg) / 0.075);
     border: 0;
     box-shadow: none;
     transform-origin: center;
@@ -932,11 +1070,13 @@ body::before {
     will-change: transform, width, height, opacity;
   }
   [data-theme='dark'] .nav-hover-bg {
-    background: rgb(var(--c-fg) / 0.12);
+    background: rgb(var(--c-fg) / 0.13);
   }
   .nav-pill-link {
+    border-radius: 6px;
     transform-origin: center;
     will-change: transform;
+    transition: color 0.2s var(--ease-out);
   }
   .nav-pill-link::after {
     display: none;

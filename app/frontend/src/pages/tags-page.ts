@@ -63,9 +63,6 @@ class TagsPage extends LitElement {
         <section class="tags-hero">
           <p class="home-kicker">Tags</p>
           <h1 class="font-serif text-3xl md:text-4xl font-bold text-fg leading-tight">所有标签</h1>
-          <p class="text-muted mt-3 text-base md:text-lg leading-8">
-            按文章数量纵向排列，快速定位一个主题，再进入对应文章列表。
-          </p>
           <div class="tags-summary">
             <span>${this.tags.length} 个标签</span>
             <span>${this.totalPosts} 次归档</span>
@@ -73,14 +70,14 @@ class TagsPage extends LitElement {
         </section>
 
         ${this.loading
-          ? this._renderLoading()
-          : this.tags.length === 0
-            ? html`<div class="py-20 text-center"><p class="text-muted text-base">还没有标签</p></div>`
-            : html`
+        ? this._renderLoading()
+        : this.tags.length === 0
+          ? html`<div class="py-20 text-center"><p class="text-muted text-base">还没有标签</p></div>`
+          : html`
                 <div class="tag-list">
                   ${this.tags.map((tag, index) => {
-                    const percent = Math.max(8, Math.round((tag.count / max) * 100));
-                    return html`
+            const percent = Math.max(8, Math.round((tag.count / max) * 100));
+            return html`
                       <button class="tag-row" type="button" @click=${() => this._goTag(tag.name)}>
                         <span class="tag-index">${String(index + 1).padStart(2, '0')}</span>
                         <span class="tag-main">
@@ -99,7 +96,7 @@ class TagsPage extends LitElement {
                         <span class="tag-arrow">${icons.arrowRight(15)}</span>
                       </button>
                     `;
-                  })}
+          })}
                 </div>
               `}
       </div>

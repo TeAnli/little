@@ -5,11 +5,24 @@ import { navigate, parseHash } from '../router/router';
 import { isLoggedIn } from '../services/auth';
 import { icons } from '../utils/icons';
 
-// 导航栏 — 克制毛玻璃 + 下划线式激活态 + 移动端 Drawer
+interface NavItem {
+  label: string;
+  path: string;
+  href: string;
+  auth?: boolean;
+}
+
+const NAV_ITEMS: NavItem[] = [
+  { label: 'Home', path: '/', href: '#/' },
+  { label: 'Tags', path: '/tags', href: '#/tags' },
+  { label: 'Admin', path: '/admin', href: '#/admin', auth: true },
+];
+
 @customElement('app-header')
 class AppHeader extends LitElement {
   @state() drawerOpen = false;
   @state() currentPath = '/';
+
   private readonly reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   createRenderRoot() {
@@ -19,22 +32,35 @@ class AppHeader extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     this._updateActive();
-    window.addEventListener('hashchange', () => this._updateActive());
+    window.addEventListener('hashchange', this._updateActive);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.removeEventListener('hashchange', this._updateActive);
   }
 
   firstUpdated() {
     this._restoreActiveNav(true);
   }
 
-  private _updateActive() {
-    const route = parseHash();
-    this.currentPath = route.page === 'home' ? '/' : route.page === 'tags' ? '/tags' : route.page === 'admin' ? '/admin' : '';
-    requestAnimationFrame(() => this._restoreActiveNav(true));
+  private _visibleItems() {
+    return NAV_ITEMS.filter((item) => !item.auth || isLoggedIn());
   }
 
-  private _closeDrawer() {
+  private _updateActive = () => {
+    const route = parseHash();
+    this.currentPath =
+      route.page === 'home' ? '/'
+        : route.page === 'tags' ? '/tags'
+          : route.page === 'admin' ? '/admin'
+            : '';
+    requestAnimationFrame(() => this._restoreActiveNav(true));
+  };
+
+  private _closeDrawer = () => {
     this.drawerOpen = false;
-  }
+  };
 
   private _isActive(path: string) {
     return this.currentPath === path;
@@ -66,21 +92,22 @@ class AppHeader extends LitElement {
       height: targetRect.height,
       opacity: 1,
       scale: 1,
-      duration: immediate || this.reducedMotion.matches ? 0 : 0.42,
+      duration: immediate || this.reducedMotion.matches ? 0 : 0.34,
       ease: 'power3.out',
       overwrite: true,
     };
 
-    if (!immediate && !this.reducedMotion.matches) {
-      gsap.fromTo(bg, { scale: 0.88 }, vars);
-    } else {
+    if (immediate || this.reducedMotion.matches) {
       gsap.set(bg, vars);
+    } else {
+      gsap.fromTo(bg, { scaleX: 0.5, scaleY: 0.96 }, vars);
     }
 
     this._navLinks().forEach((link) => {
       gsap.to(link, {
-        scale: link === target ? 1.035 : 1,
-        duration: this.reducedMotion.matches ? 0 : 0.22,
+        y: link === target ? -1 : 0,
+        scale: link === target ? 1.015 : 1,
+        duration: this.reducedMotion.matches ? 0 : 0.2,
         ease: 'power2.out',
         overwrite: true,
       });
@@ -90,120 +117,134 @@ class AppHeader extends LitElement {
   private _restoreActiveNav(immediate = false) {
     const active = this.querySelector<HTMLElement>(`.nav-pill-link[data-path="${this.currentPath}"]`);
     const bg = this._navBg();
+
     if (active) {
       this._moveNavBg(active, immediate);
       return;
     }
+
     if (bg) {
       gsap.to(bg, {
         opacity: 0,
-        scale: 0.92,
-        duration: immediate || this.reducedMotion.matches ? 0 : 0.24,
+        scaleX: 0.5,
+        duration: immediate || this.reducedMotion.matches ? 0 : 0.2,
         ease: 'power2.out',
         overwrite: true,
       });
     }
+
     this._navLinks().forEach((link) => gsap.to(link, {
+      y: 0,
       scale: 1,
-      duration: this.reducedMotion.matches ? 0 : 0.18,
+      duration: this.reducedMotion.matches ? 0 : 0.16,
       overwrite: true,
     }));
   }
 
-  render() {
+  private _navigate(path: string) {
+    navigate(path);
+    this._closeDrawer();
+  }
+
+  private _renderDesktopNav() {
     return html`
-      <header
-        class="frosted sticky top-0 z-40 border-b hairline"
+      <nav
+        class="nav-pill-wrap hidden md:flex items-center gap-1 relative p-1"
+        aria-label="主导航"
+        @mouseleave=${() => this._restoreActiveNav()}
       >
-        <div class="max-w-3xl mx-auto px-5 md:px-6">
-          <div class="flex items-center justify-between h-16">
-            <!-- 字标：更克制，无圆点 -->
+        <span class="nav-hover-bg" aria-hidden="true"></span>
+        ${this._visibleItems().map((item) => html`
+          <a
+            href=${item.href}
+            data-path=${item.path}
+            class="nav-link nav-pill-link relative z-10 px-3 py-2 text-sm font-medium ${this._isActive(item.path) ? 'active text-fg' : 'text-muted hover:text-fg'}"
+            @mouseenter=${(event: MouseEvent) => this._moveNavBg(event.currentTarget as HTMLElement)}
+            @focus=${(event: FocusEvent) => this._moveNavBg(event.currentTarget as HTMLElement)}
+            @click=${() => navigate(item.path)}
+          >${item.label}</a>
+        `)}
+      </nav>
+    `;
+  }
+
+  private _renderDrawer() {
+    if (!this.drawerOpen) return nothing;
+
+    return html`
+      <div
+        class="fixed inset-0 z-50 md:hidden"
+        @click=${(event: Event) => {
+          if (event.target === event.currentTarget) this._closeDrawer();
+        }}
+      >
+        <div class="drawer-overlay overlay-enter absolute inset-0"></div>
+        <aside class="mobile-drawer modal-enter">
+          <div class="flex items-center justify-between mb-8">
             <a
               href="#/"
-              class="font-serif text-lg font-bold text-fg tracking-tight cursor-pointer transition-opacity hover:opacity-70"
-              @click=${() => navigate('/')}
+              class="brand-mark"
+              @click=${() => this._navigate('/')}
             >
               Little Blog
             </a>
-
-            <!-- 桌面导航 — 下划线激活态 -->
-            <nav
-              class="nav-pill-wrap hidden md:flex items-center gap-1 relative p-1 rounded-[6px]"
-              @mouseleave=${() => this._restoreActiveNav()}
+            <button
+              class="btn-ghost micro-lift p-2 text-muted hover:text-fg cursor-pointer"
+              @click=${this._closeDrawer}
+              aria-label="关闭菜单"
             >
-              <span class="nav-hover-bg" aria-hidden="true"></span>
-              <a
-                href="#/"
-                data-path="/"
-                class="nav-link nav-pill-link relative z-10 px-3 py-2 rounded-[6px] text-sm font-medium ${this._isActive('/') ? 'active text-fg' : 'text-muted hover:text-fg'}"
-                @mouseenter=${(e: MouseEvent) => this._moveNavBg(e.currentTarget as HTMLElement)}
-                @focus=${(e: FocusEvent) => this._moveNavBg(e.currentTarget as HTMLElement)}
-                @click=${() => navigate('/')}
-              >Home</a>
-              <a
-                href="#/tags"
-                data-path="/tags"
-                class="nav-link nav-pill-link relative z-10 px-3 py-2 rounded-[6px] text-sm font-medium ${this._isActive('/tags') ? 'active text-fg' : 'text-muted hover:text-fg'}"
-                @mouseenter=${(e: MouseEvent) => this._moveNavBg(e.currentTarget as HTMLElement)}
-                @focus=${(e: FocusEvent) => this._moveNavBg(e.currentTarget as HTMLElement)}
-                @click=${() => navigate('/tags')}
-              >Tags</a>
-              ${isLoggedIn()
-        ? html`<a
-                    href="#/admin"
-                    data-path="/admin"
-                    class="nav-link nav-pill-link relative z-10 px-3 py-2 rounded-[6px] text-sm font-medium ${this._isActive('/admin') ? 'active text-fg' : 'text-muted hover:text-fg'}"
-                    @mouseenter=${(e: MouseEvent) => this._moveNavBg(e.currentTarget as HTMLElement)}
-                    @focus=${(e: FocusEvent) => this._moveNavBg(e.currentTarget as HTMLElement)}
-                    @click=${() => navigate('/admin')}
-                  >Admin</a>`
-        : nothing}
-            </nav>
+              ${icons.close(20)}
+            </button>
+          </div>
 
-            <!-- 右侧操作区 -->
-            <div class="flex items-center gap-1">
-              <search-bar></search-bar>
-              <theme-switcher></theme-switcher>
-              <!-- 移动端菜单 -->
-              <button
-                class="btn-ghost micro-lift p-2 rounded-[var(--radius-btn)] text-fg cursor-pointer md:hidden"
-                @click=${() => (this.drawerOpen = true)}
-                aria-label="打开菜单"
+          <nav class="mobile-nav-list" aria-label="移动端导航">
+            ${this._visibleItems().map((item) => html`
+              <a
+                href=${item.href}
+                class="mobile-nav-item ${this._isActive(item.path) ? 'is-active' : ''}"
+                @click=${() => this._navigate(item.path)}
               >
-                ${icons.menu(20)}
-              </button>
-            </div>
+                <span>${item.label}</span>
+                <span>${icons.arrowRight(15)}</span>
+              </a>
+            `)}
+          </nav>
+        </aside>
+      </div>
+    `;
+  }
+
+  render() {
+    return html`
+      <header class="site-header sticky top-0 z-40">
+        <div class="header-shell">
+          <a
+            href="#/"
+            class="brand-mark"
+            @click=${() => navigate('/')}
+            aria-label="回到首页"
+          >
+            Little Blog
+          </a>
+
+          ${this._renderDesktopNav()}
+
+          <div class="header-actions">
+            <search-bar></search-bar>
+            <theme-switcher></theme-switcher>
+            <button
+              class="btn-ghost micro-lift p-2 text-fg cursor-pointer md:hidden"
+              @click=${() => (this.drawerOpen = true)}
+              aria-label="打开菜单"
+              aria-expanded=${this.drawerOpen}
+            >
+              ${icons.menu(20)}
+            </button>
           </div>
         </div>
       </header>
 
-      <!-- 移动端 Drawer -->
-      ${this.drawerOpen
-        ? html`
-            <div class="fixed inset-0 z-50 md:hidden" @click=${(e: Event) => {
-            if (e.target === e.currentTarget) this._closeDrawer();
-          }}>
-              <div class="drawer-overlay overlay-enter absolute inset-0"></div>
-              <div class="absolute right-0 top-0 h-full w-72 bg-surface p-6 modal-enter border-l hairline">
-                <div class="flex items-center justify-between mb-10">
-                  <span class="font-serif text-base font-bold text-fg">Menu</span>
-                  <button
-                    class="btn-ghost micro-lift p-2 rounded-lg text-muted hover:text-fg cursor-pointer"
-                    @click=${this._closeDrawer}
-                    aria-label="关闭菜单"
-                  >
-                    ${icons.close(20)}
-                  </button>
-                </div>
-                <nav class="flex flex-col gap-1">
-                  <a href="#/" class="btn-ghost micro-lift px-4 py-3 rounded-[var(--radius-btn)] text-fg font-medium ${this._isActive('/') ? '' : 'text-muted'}" @click=${this._closeDrawer}>Home</a>
-                  <a href="#/tags" class="btn-ghost micro-lift px-4 py-3 rounded-[var(--radius-btn)] font-medium ${this._isActive('/tags') ? 'text-fg' : 'text-muted'}" @click=${this._closeDrawer}>Tags</a>
-                  ${isLoggedIn() ? html`<a href="#/admin" class="btn-ghost micro-lift px-4 py-3 rounded-[var(--radius-btn)] font-medium text-muted" @click=${this._closeDrawer}>Admin</a>` : nothing}
-                </nav>
-              </div>
-            </div>
-          `
-        : nothing}
+      ${this._renderDrawer()}
     `;
   }
 }

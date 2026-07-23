@@ -14,6 +14,7 @@ class HomePage extends LitElement {
   @property({ type: String }) tag = '';
 
   size = 10;
+  private readonly githubUrl = 'https://github.com/TeAnli';
   private _loaded = false;
 
   createRenderRoot() {
@@ -94,10 +95,10 @@ class HomePage extends LitElement {
           <div class="home-hero-copy">
             <p class="home-kicker">Little Blog</p>
             <h1 class="font-serif text-4xl md:text-6xl font-bold text-fg leading-[1.08]">
-              思考、工程与日常记录
+              在这里，留下一些慢慢想清楚的东西。
             </h1>
             <p class="text-muted mt-5 text-base md:text-lg leading-8 max-w-2xl">
-              记录 Web 开发、工程实践、阅读笔记，以及一些值得保留下来的问题和答案。
+              写给当下，也写给之后回头看的自己。
             </p>
             <div class="flex flex-wrap items-center gap-3 mt-8">
               <button
@@ -125,8 +126,8 @@ class HomePage extends LitElement {
               <strong>${this.loading ? '...' : this.total}</strong>
             </div>
             <div class="home-stat">
-              <span>主题</span>
-              <strong>Web</strong>
+              <span>GitHub</span>
+              <a href=${this.githubUrl} target="_blank" rel="noreferrer">TeAnli</a>
             </div>
             <div class="home-stat">
               <span>更新</span>
